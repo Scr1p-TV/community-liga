@@ -210,6 +210,28 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 .footer-logo span{color:var(--muted)}
 .footer-meta{font-size:.74rem;color:var(--muted);text-align:right;line-height:1.6}
 
+/* TWITCH EMBED */
+.twitch-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.twitch-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;
+  padding:clamp(.7rem,2vw,.95rem) clamp(.85rem,2.5vw,1.25rem);
+  background:rgba(145,70,255,.07);border-bottom:1px solid var(--border)}
+.twitch-header-left{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.twitch-channel{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.05rem;
+  text-transform:uppercase;letter-spacing:.07em}
+.twitch-status-badge{display:inline-flex;align-items:center;gap:.35rem;
+  border-radius:100px;padding:.22rem .7rem;font-size:.67rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  background:rgba(145,70,255,.12);border:1px solid rgba(145,70,255,.3);color:#bf94ff;
+  transition:background .4s,border-color .4s,color .4s}
+.twitch-status-badge.is-live{background:rgba(244,67,54,.12);border-color:rgba(244,67,54,.35);color:#ff6b6b}
+.twitch-status-badge.is-offline{background:rgba(107,117,133,.1);border-color:rgba(107,117,133,.25);color:var(--muted)}
+.twitch-open-btn{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:#9146ff;border:1px solid rgba(145,70,255,.3);border-radius:6px;
+  padding:.32rem .78rem;transition:background .2s,color .2s;white-space:nowrap}
+.twitch-open-btn:hover{background:rgba(145,70,255,.12);color:#bf94ff}
+.twitch-player-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#0a0a0a}
+.twitch-player-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+
 /* SCROLL REVEAL */
 .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
 .reveal.visible{opacity:1;transform:none}
@@ -377,7 +399,7 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 
 <!-- TEILNEHMER -->
 <div class="section reveal" id="teilnehmer">
-  <p class="section-eyebrow">Saison 2025</p>
+  <p class="section-eyebrow">Saison 2026</p>
   <h2 class="section-title">Teilnehmer</h2>
   <div class="player-grid" id="player-grid"></div>
 </div>
@@ -388,46 +410,83 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 <div class="section reveal" id="streams">
   <p class="section-eyebrow">Content</p>
   <h2 class="section-title">Streams &amp; Videos</h2>
-  
-  <div class="streams-grid">
-    <!-- Stream 1 -->
-    <a class="stream-card" href="https://twitch.tv/scr1ptv" target="_blank" rel="noopener">
-      <div class="stream-thumb">
-        <div class="stream-live"><span class="live-dot"></span>Live</div>
-        <div class="stream-play"></div>
+
+  <!-- Twitch Live Player -->
+  <div class="twitch-wrap" id="twitch-wrap">
+    <div class="twitch-header">
+      <div class="twitch-header-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#9146ff" style="flex-shrink:0"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+        <span class="twitch-channel">Scr1ptv</span>
+        <span class="twitch-status-badge" id="twitch-badge">
+          <span class="live-dot"></span> Wird geladen…
+        </span>
       </div>
-      <div class="stream-info">
-        <div class="stream-title">Spieltag Live – UFL Community Liga</div>
-        <div class="stream-meta">twitch.tv/scr1ptv</div>
+      <a href="https://twitch.tv/Scr1ptv" target="_blank" rel="noopener" class="twitch-open-btn">
+        Auf Twitch öffnen ↗
+      </a>
+    </div>
+    <div class="twitch-player-wrap">
+      <iframe
+        id="twitch-iframe"
+        src="https://player.twitch.tv/?channel=Scr1ptv&parent=localhost&autoplay=false&muted=true"
+        allowfullscreen
+        allow="autoplay; fullscreen"
+        frameborder="0"
+        scrolling="no">
+      </iframe>
+    </div>
+  </div>
+
+  <div class="twitch-wrap" id="twitch-wrap">
+    <div class="twitch-header">
+      <div class="twitch-header-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#9146ff" style="flex-shrink:0"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+        <span class="twitch-channel">BennyBroKenobi</span>
+        <span class="twitch-status-badge" id="twitch-badge">
+          <span class="live-dot"></span> Wird geladen…
+        </span>
       </div>
-    </a>
-    
-    <!-- Stream 2 -->
-    <a class="stream-card" href="https://twitch.tv/bennybrokenobi" target="_blank" rel="noopener">
-      <div class="stream-thumb">
-        <div class="stream-live"><span class="live-dot"></span>Live</div>
-        <div class="stream-play"></div>
-      </div>
-      <div class="stream-info">
-        <div class="stream-title">Spieltag Live – UFL Community Liga</div>
-        <div class="stream-meta">twitch.tv/bennybrokenobi</div>
-      </div>
-    </a>
-    
-    <!-- Stream 3 -->
-    <a class="stream-card" href="https://twitch.tv/virent90" target="_blank" rel="noopener">
-      <div class="stream-thumb">
-        <div class="stream-live"><span class="live-dot"></span>Live</div>
-        <div class="stream-play"></div>
-      </div>
-      <div class="stream-info">
-        <div class="stream-title">Spieltag Live – UFL Community Liga</div>
-        <div class="stream-meta">twitch.tv/virent90</div>
-      </div>
-    </a>
+      <a href="https://twitch.tv/BennyBroKenobi" target="_blank" rel="noopener" class="twitch-open-btn">
+        Auf Twitch öffnen ↗
+      </a>
+    </div>
+    <div class="twitch-player-wrap">
+      <iframe
+        id="twitch-iframe"
+        src="https://player.twitch.tv/?channel=BennyBroKenobi&parent=localhost&autoplay=false&muted=true"
+        allowfullscreen
+        allow="autoplay; fullscreen"
+        frameborder="0"
+        scrolling="no">
+      </iframe>
+    </div>
   </div>
 </div>
 
+<div class="twitch-wrap" id="twitch-wrap">
+    <div class="twitch-header">
+      <div class="twitch-header-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#9146ff" style="flex-shrink:0"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>
+        <span class="twitch-channel">Virent90</span>
+        <span class="twitch-status-badge" id="twitch-badge">
+          <span class="live-dot"></span> Wird geladen…
+        </span>
+      </div>
+      <a href="https://twitch.tv/Virent90" target="_blank" rel="noopener" class="twitch-open-btn">
+        Auf Twitch öffnen ↗
+      </a>
+    </div>
+    <div class="twitch-player-wrap">
+      <iframe
+        id="twitch-iframe"
+        src="https://player.twitch.tv/?channel=Virent90&parent=localhost&autoplay=false&muted=true"
+        allowfullscreen
+        allow="autoplay; fullscreen"
+        frameborder="0"
+        scrolling="no">
+      </iframe>
+    </div>
+  </div>
 <div class="sep"></div>
 
 <!-- BEWERBUNG -->
@@ -437,13 +496,13 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
       <h2>Bereit für die <span>Liga?</span></h2>
       <p>Bewirb dich jetzt für die nächste Saison. Füll das Formular aus und wir melden uns bei dir.</p>
     </div>
-    <a href="https://forms.gle/knF7FtbtKeJYEsr1A" target="_blank" rel="noopener" class="btn-primary" style="font-size:.92rem;padding:.88rem 1.9rem">📋 Zur Bewerbung</a>
+    <a href="DEIN_GOOGLE_SHEETS_LINK" target="_blank" rel="noopener" class="btn-primary" style="font-size:.92rem;padding:.88rem 1.9rem">📋 Zur Bewerbung</a>
   </div>
 </div>
 
 <footer>
   <div class="footer-logo">⚽ UFL <span>Community Liga</span></div>
-  <div class="footer-meta">© 2025 UFL Community Liga · Saison 2025<br><span style="font-size:.68rem">Kein offizielles UFL-Produkt</span></div>
+  <div class="footer-meta">© 2026 UFL Community Liga · Saison 2026<br><span style="font-size:.68rem">Kein offizielles UFL-Produkt</span></div>
 </footer>
 
 <!-- ADMIN MODAL -->
@@ -461,20 +520,20 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 // ══════════════════════════════════════
 //  KONFIGURATION  ← hier anpassen
 // ══════════════════════════════════════
-const ADMIN_PW    = 'ufl2025';  // Passwort ändern!
+const ADMIN_PW    = '4Xs5b6vic!';  // Passwort ändern!
 const MAX_PLAYERS = 10;
 
 // ══════════════════════════════════════
 //  DATEN (localStorage)
 // ══════════════════════════════════════
 const defaultPlayers = [
-  {id:1,name:'BennyBroKenobi',},
-  {id:2,name:'DatSeb',},
-  {id:3,name:'AGE_Kevin',},
-  {id:4,name:'Kira',},
-  {id:5,name:'Askeladd',},
-  {id:6,name:'Virent',},
-  {id:7,name:'Scr1p',},
+  {id:1,name:'BennyBroKenobi'},
+  {id:2,name:'DatSeb'},
+  {id:3,name:'AGE_Kevin'},
+  {id:4,name:'Kira'},
+  {id:5,name:'Askeladd'},
+  {id:6,name:'Virent'},
+  {id:7,name:'Scr1p'},
 ];
 
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
@@ -843,6 +902,186 @@ window.addEventListener('scroll',()=>{
   secs.forEach(s=>{if(window.scrollY>=s.offsetTop-80)cur=s.id;});
   navAs.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
 },{passive:true});
+
+
+// ══════════════════════════════════════
+//  TWITCH EMBED – parent & Live-Status Scr1p
+// ══════════════════════════════════════
+(function(){
+  const CHANNEL = 'Scr1ptv';
+  const host = location.hostname || 'localhost';
+  const badge = document.getElementById('twitch-badge');
+  const iframe = document.getElementById('twitch-iframe');
+
+  // Setze korrekten parent für Twitch iframe (braucht echte Domain)
+  if(iframe){
+    iframe.src = 'https://player.twitch.tv/?channel=' + CHANNEL + '&parent=' + host + '&autoplay=false&muted=true';
+  }
+
+  function setLive(){
+    if(!badge) return;
+    badge.className = 'twitch-status-badge is-live';
+    badge.innerHTML = '<span class="live-dot" style="background:#ff6b6b;animation:pulse 1.2s infinite"></span> LIVE';
+  }
+  function setOffline(){
+    if(!badge) return;
+    badge.className = 'twitch-status-badge is-offline';
+    badge.innerHTML = '⬤ Offline';
+  }
+  function setLoading(){
+    if(!badge) return;
+    badge.className = 'twitch-status-badge';
+    badge.innerHTML = '🟣 ' + CHANNEL;
+  }
+
+  // Live-Check via öffentlichem Twitch oEmbed-Endpunkt (kein API-Key nötig)
+  // Gibt nur Daten zurück wenn der Kanal LIVE ist
+  function checkLive(){
+    fetch('https://www.twitch.tv/' + CHANNEL, {mode:'no-cors'})
+      .then(() => {
+        // no-cors gibt keinen Body – wir nutzen oEmbed
+      }).catch(()=>{});
+
+    // oEmbed liefert Daten nur wenn gerade live gestreamt wird
+    fetch('https://www.twitch.tv/meta/oembed?url=https://www.twitch.tv/' + CHANNEL + '&format=json')
+      .then(r => {
+        if(r.ok) return r.json();
+        throw new Error('offline or error');
+      })
+      .then(data => {
+        if(data && data.author_name) setLive();
+        else setOffline();
+      })
+      .catch(() => {
+        // CORS blockiert auf GitHub Pages – Badge zeigt Kanal-Link
+        setLoading();
+      });
+  }
+
+  setLoading();
+  setTimeout(checkLive, 1200);
+  setInterval(checkLive, 3 * 60 * 1000); // alle 3 Minuten
+})();
+
+// ══════════════════════════════════════
+//  TWITCH EMBED – parent & Live-Status BennyBroKenobi
+// ══════════════════════════════════════
+(function(){
+  const CHANNEL = 'BennyBroKenobi';
+  const host = location.hostname || 'localhost';
+  const badge = document.getElementById('twitch-badge');
+  const iframe = document.getElementById('twitch-iframe');
+
+  // Setze korrekten parent für Twitch iframe (braucht echte Domain)
+  if(iframe){
+    iframe.src = 'https://player.twitch.tv/?channel=' + CHANNEL + '&parent=' + host + '&autoplay=false&muted=true';
+  }
+
+  function setLive(){
+    if(!badge) return;
+    badge.className = 'twitch-status-badge is-live';
+    badge.innerHTML = '<span class="live-dot" style="background:#ff6b6b;animation:pulse 1.2s infinite"></span> LIVE';
+  }
+  function setOffline(){
+    if(!badge) return;
+    badge.className = 'twitch-status-badge is-offline';
+    badge.innerHTML = '⬤ Offline';
+  }
+  function setLoading(){
+    if(!badge) return;
+    badge.className = 'twitch-status-badge';
+    badge.innerHTML = '🟣 ' + CHANNEL;
+  }
+
+  // Live-Check via öffentlichem Twitch oEmbed-Endpunkt (kein API-Key nötig)
+  // Gibt nur Daten zurück wenn der Kanal LIVE ist
+  function checkLive(){
+    fetch('https://www.twitch.tv/' + CHANNEL, {mode:'no-cors'})
+      .then(() => {
+        // no-cors gibt keinen Body – wir nutzen oEmbed
+      }).catch(()=>{});
+
+    // oEmbed liefert Daten nur wenn gerade live gestreamt wird
+    fetch('https://www.twitch.tv/meta/oembed?url=https://www.twitch.tv/' + CHANNEL + '&format=json')
+      .then(r => {
+        if(r.ok) return r.json();
+        throw new Error('offline or error');
+      })
+      .then(data => {
+        if(data && data.author_name) setLive();
+        else setOffline();
+      })
+      .catch(() => {
+        // CORS blockiert auf GitHub Pages – Badge zeigt Kanal-Link
+        setLoading();
+      });
+  }
+
+  setLoading();
+  setTimeout(checkLive, 1200);
+  setInterval(checkLive, 3 * 60 * 1000); // alle 3 Minuten
+})();
+
+// ══════════════════════════════════════
+//  TWITCH EMBED – parent & Live-Status Virent
+// ══════════════════════════════════════
+(function(){
+  const CHANNEL = 'Virent90';
+  const host = location.hostname || 'localhost';
+  const badge = document.getElementById('twitch-badge');
+  const iframe = document.getElementById('twitch-iframe');
+
+  // Setze korrekten parent für Twitch iframe (braucht echte Domain)
+  if(iframe){
+    iframe.src = 'https://player.twitch.tv/?channel=' + CHANNEL + '&parent=' + host + '&autoplay=false&muted=true';
+  }
+
+  function setLive(){
+    if(!badge) return;
+    badge.className = 'twitch-status-badge is-live';
+    badge.innerHTML = '<span class="live-dot" style="background:#ff6b6b;animation:pulse 1.2s infinite"></span> LIVE';
+  }
+  function setOffline(){
+    if(!badge) return;
+    badge.className = 'twitch-status-badge is-offline';
+    badge.innerHTML = '⬤ Offline';
+  }
+  function setLoading(){
+    if(!badge) return;
+    badge.className = 'twitch-status-badge';
+    badge.innerHTML = '🟣 ' + CHANNEL;
+  }
+
+  // Live-Check via öffentlichem Twitch oEmbed-Endpunkt (kein API-Key nötig)
+  // Gibt nur Daten zurück wenn der Kanal LIVE ist
+  function checkLive(){
+    fetch('https://www.twitch.tv/' + CHANNEL, {mode:'no-cors'})
+      .then(() => {
+        // no-cors gibt keinen Body – wir nutzen oEmbed
+      }).catch(()=>{});
+
+    // oEmbed liefert Daten nur wenn gerade live gestreamt wird
+    fetch('https://www.twitch.tv/meta/oembed?url=https://www.twitch.tv/' + CHANNEL + '&format=json')
+      .then(r => {
+        if(r.ok) return r.json();
+        throw new Error('offline or error');
+      })
+      .then(data => {
+        if(data && data.author_name) setLive();
+        else setOffline();
+      })
+      .catch(() => {
+        // CORS blockiert auf GitHub Pages – Badge zeigt Kanal-Link
+        setLoading();
+      });
+  }
+
+  setLoading();
+  setTimeout(checkLive, 1200);
+  setInterval(checkLive, 3 * 60 * 1000); // alle 3 Minuten
+})();
+
+
 
 // ══════════════════════════════════════
 //  INIT
