@@ -389,17 +389,19 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
   <p class="section-eyebrow">Content</p>
   <h2 class="section-title">Streams &amp; Videos</h2>
   <div class="streams-grid">
-    <a class="stream-card" href="https://twitch.tv/DEIN_KANAL" target="_blank" rel="noopener">
+    <a class="stream-card" href="https://twitch.tv/scr1ptv" target="_blank" rel="noopener">
       <div class="stream-thumb"><div class="stream-live"><span class="live-dot"></span>Live</div><div class="stream-play"></div></div>
-      <div class="stream-info"><div class="stream-title">Spieltag Live – UFL Community Liga</div><div class="stream-meta">twitch.tv/uflliga</div></div>
+      <div class="stream-info"><div class="stream-title">Spieltag Live – UFL Community Liga</div><div class="stream-meta">twitch.tv/scr1ptv</div></div>
     </a>
-    <a class="stream-card" href="https://youtube.com/DEIN_VIDEO_1" target="_blank" rel="noopener">
-      <div class="stream-thumb"><div class="stream-play"></div></div>
-      <div class="stream-info"><div class="stream-title">Highlights – letzter Spieltag</div><div class="stream-meta">youtube.com</div></div>
+    <div class="streams-grid">
+    <a class="stream-card" href="https://twitch.tv/bennybrokenobi" target="_blank" rel="noopener">
+      <div class="stream-thumb"><div class="stream-live"><span class="live-dot"></span>Live</div><div class="stream-play"></div></div>
+      <div class="stream-info"><div class="stream-title">Spieltag Live – UFL Community Liga</div><div class="stream-meta">twitch.tv/bennybrokenobi</div></div>
     </a>
-    <a class="stream-card" href="https://youtube.com/DEIN_VIDEO_2" target="_blank" rel="noopener">
-      <div class="stream-thumb"><div class="stream-play"></div></div>
-      <div class="stream-info"><div class="stream-title">Season Recap</div><div class="stream-meta">youtube.com</div></div>
+	<div class="streams-grid">
+    <a class="stream-card" href="https://twitch.tv/virent90" target="_blank" rel="noopener">
+      <div class="stream-thumb"><div class="stream-live"><span class="live-dot"></span>Live</div><div class="stream-play"></div></div>
+      <div class="stream-info"><div class="stream-title">Spieltag Live – UFL Community Liga</div><div class="stream-meta">twitch.tv/virent90</div></div>
     </a>
   </div>
 </div>
@@ -413,7 +415,7 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
       <h2>Bereit für die <span>Liga?</span></h2>
       <p>Bewirb dich jetzt für die nächste Saison. Füll das Formular aus und wir melden uns bei dir.</p>
     </div>
-    <a href="DEIN_GOOGLE_SHEETS_LINK" target="_blank" rel="noopener" class="btn-primary" style="font-size:.92rem;padding:.88rem 1.9rem">📋 Zur Bewerbung</a>
+    <a href="https://forms.gle/knF7FtbtKeJYEsr1A" target="_blank" rel="noopener" class="btn-primary" style="font-size:.92rem;padding:.88rem 1.9rem">📋 Zur Bewerbung</a>
   </div>
 </div>
 
@@ -444,13 +446,13 @@ const MAX_PLAYERS = 10;
 //  DATEN (localStorage)
 // ══════════════════════════════════════
 const defaultPlayers = [
-  {id:1,name:'Spieler A',team:'FC Barcelona'},
-  {id:2,name:'Spieler B',team:'Real Madrid'},
-  {id:3,name:'Spieler C',team:'Bayern München'},
-  {id:4,name:'Spieler D',team:'Man City'},
-  {id:5,name:'Spieler E',team:'PSG'},
-  {id:6,name:'Spieler F',team:'Juventus'},
-  {id:7,name:'Spieler G',team:'Borussia Dortmund'},
+  {id:1,name:'BennyBroKenobi',},
+  {id:2,name:'DatSeb',},
+  {id:3,name:'AGE_Kevin',},
+  {id:4,name:'Kira',},
+  {id:5,name:'Askeladd',},
+  {id:6,name:'Virent',},
+  {id:7,name:'Scr1p',},
 ];
 
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
