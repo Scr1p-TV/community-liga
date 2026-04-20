@@ -3,540 +3,841 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UFL Draft – Pick &amp; Ban</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700;900&family=Barlow+Condensed:wght@700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<title>UFL Pick &amp; Ban</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#080b0e;--surface:#0f1318;--surface2:#141920;
-  --border:#1e2530;--text:#dde5ef;--muted:#6b7585;
-  --green:#00e676;--green-dark:#00b050;
-  --accent:#00c8ff;--accent2:#ff4060;
-  --pick:#00e5a0;--ban:#ff4060;
-  --gold:#ffd84d;--radius:8px;
-}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden}
-a{color:inherit;text-decoration:none}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  :root {
+    --bg: #0a0c10;
+    --surface: #11141c;
+    --surface2: #181d28;
+    --border: #1e2535;
+    --accent: #00c8ff;
+    --accent2: #ff4060;
+    --ban-color: #ff4060;
+    --pick-color: #00e5a0;
+    --gold: #ffd84d;
+    --text: #e8eaf2;
+    --muted: #5a6080;
+    --glow: 0 0 20px rgba(0,200,255,0.25);
+    --glow-red: 0 0 20px rgba(255,64,96,0.3);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Exo 2', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:
-    linear-gradient(rgba(0,200,255,.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,200,255,.025) 1px,transparent 1px);
-  background-size:48px 48px}
-body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.18;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E")}
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-/* ── TOPBAR ── */
-.topbar{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;
-  background:rgba(8,11,14,.92);backdrop-filter:blur(18px);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 clamp(1rem,4vw,2.5rem);gap:1rem}
-.topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;
-  letter-spacing:.14em;color:var(--accent);display:flex;align-items:center;gap:.5rem;
-  text-shadow:0 0 18px rgba(0,200,255,.3)}
-.topbar-logo span{color:var(--text)}
-.topbar-back{display:inline-flex;align-items:center;gap:.45rem;
-  font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);padding:.35rem .75rem;border-radius:6px;border:1px solid var(--border);
-  transition:color .2s,border-color .2s}
-.topbar-back:hover{color:var(--green);border-color:rgba(0,230,118,.3)}
-.topbar-back svg{transition:transform .2s}
-.topbar-back:hover svg{transform:translateX(-3px)}
-.season-badge{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--muted);border:1px solid var(--border);padding:.3rem .85rem;border-radius:4px}
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #0d1018 0%, transparent 100%);
+  }
+  .logo {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-shadow: var(--glow);
+  }
+  .logo span { color: var(--text); }
+  .season-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 2px;
+  }
 
-/* ── NAV TABS ── */
-.nav-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);
-  position:relative;z-index:5}
-.nav-tab{font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:700;
-  letter-spacing:.15em;text-transform:uppercase;padding:13px 22px;background:none;
-  border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
-  transition:color .2s,border-color .2s}
-.nav-tab:hover{color:var(--text)}
-.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .page { display: none; position: relative; z-index: 1; }
+  .page.active { display: block; }
 
-/* ── PAGE ── */
-.page{display:none;position:relative;z-index:1}
-.page.active{display:block}
+  .admin-wrap {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 24px;
+  }
+  .section-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
 
-/* ── SHARED ── */
-.wrap{max-width:1000px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,4vw,2rem)}
-.section-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:900;
-  letter-spacing:.2em;text-transform:uppercase;color:var(--accent);
-  margin-bottom:14px;display:flex;align-items:center;gap:10px}
-.section-lbl::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:clamp(1rem,3vw,1.5rem);margin-bottom:1rem}
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
 
-/* Forms */
-.form-row{display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:.75rem}
-.form-group{display:flex;flex-direction:column;gap:.32rem;flex:1;min-width:140px}
-.form-group label{font-size:.65rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.form-group input,.form-group select{
-  background:var(--bg);border:1px solid var(--border);color:var(--text);
-  padding:.58rem .85rem;font-family:'Barlow',sans-serif;font-size:.88rem;
-  border-radius:6px;outline:none;transition:border-color .2s;width:100%}
-.form-group input:focus,.form-group select:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(0,200,255,.12)}
-.form-group input::placeholder{color:var(--muted)}
+  .form-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 160px;
+  }
+  label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  input, select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.9rem;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(0,200,255,0.15);
+  }
 
-/* Buttons */
-.btn{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;
-  letter-spacing:.12em;text-transform:uppercase;padding:.58rem 1.35rem;
-  border:none;border-radius:6px;cursor:pointer;transition:all .18s;white-space:nowrap}
-.btn-accent{background:var(--accent);color:#000}
-.btn-accent:hover{background:#33d4ff;box-shadow:0 0 18px rgba(0,200,255,.28)}
-.btn-pick{background:var(--pick);color:#000}
-.btn-pick:hover{background:#33ffb8}
-.btn-ban{background:transparent;border:1px solid var(--ban);color:var(--ban)}
-.btn-ban:hover{background:rgba(255,64,96,.1)}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
-.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-.btn-sm{padding:.35rem .85rem;font-size:.72rem}
+  .btn {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #33d4ff; box-shadow: var(--glow); }
+  .btn-danger { background: transparent; border: 1px solid var(--ban-color); color: var(--ban-color); }
+  .btn-danger:hover { background: rgba(255,64,96,0.1); }
+  .btn-success { background: var(--pick-color); color: #000; }
+  .btn-success:hover { background: #33ffb8; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm { padding: 6px 14px; font-size: 0.78rem; }
 
-/* ── ADMIN PAGE ── */
-.participant-list{display:flex;flex-direction:column;gap:.45rem;max-height:320px;overflow-y:auto;padding-right:4px}
-.participant-item{display:flex;align-items:center;gap:.65rem;background:var(--surface2);
-  border:1px solid var(--border);border-radius:6px;padding:.58rem .95rem;font-size:.88rem}
-.p-num{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--accent);min-width:20px}
-.p-name{flex:1;font-weight:600}
+  .player-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .player-list::-webkit-scrollbar { width: 4px; }
+  .player-list::-webkit-scrollbar-track { background: var(--bg); }
+  .player-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-.player-pool-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));
-  gap:.45rem;max-height:300px;overflow-y:auto;padding-right:4px}
-.pool-item{display:flex;align-items:center;gap:.6rem;background:var(--surface2);
-  border:1px solid var(--border);border-radius:6px;padding:.52rem .85rem;font-size:.85rem}
-.pool-item .pi-name{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pool-item .pi-pos{font-size:.68rem;color:var(--muted);min-width:28px}
-.pool-item .pi-rating{font-family:'Bebas Neue',sans-serif;color:var(--gold);font-size:.9rem;min-width:24px;text-align:right}
-.pool-item .pi-del{background:none;border:none;color:var(--muted);cursor:pointer;padding:0 2px;font-size:.95rem;transition:color .2s;margin-left:2px}
-.pool-item .pi-del:hover{color:var(--ban)}
+  .player-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    gap: 8px;
+  }
+  .player-item .pi-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .player-item .pi-rating {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    color: var(--gold);
+    font-size: 0.8rem;
+    min-width: 28px;
+    text-align: right;
+  }
+  .player-item .pi-del {
+    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem;
+    padding: 0 2px; transition: color 0.2s;
+  }
+  .player-item .pi-del:hover { color: var(--ban-color); }
 
-.start-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
-.start-info{font-size:.82rem;color:var(--muted)}
+  .participant-list { display: flex; flex-direction: column; gap: 8px; }
+  .participant-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+  }
+  .participant-item .p-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--accent);
+    min-width: 22px;
+  }
+  .participant-item .p-name { flex: 1; font-weight: 600; }
 
-/* Liga-Spieler Import Banner */
-.liga-import{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;
-  background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:8px;
-  padding:.85rem 1.1rem;margin-bottom:.85rem}
-.liga-import p{font-size:.82rem;color:var(--green)}
-.liga-import p span{color:var(--muted);font-size:.75rem}
+  .draft-wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px;
+  }
 
-/* ── DRAFT PAGE ── */
-.draft-outer{max-width:1380px;margin:0 auto;padding:clamp(1rem,3vw,1.75rem) clamp(.75rem,3vw,1.5rem)}
+  .phase-banner {
+    text-align: center;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .phase-label {
+    display: inline-block;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .phase-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .phase-title.ban { color: var(--ban-color); text-shadow: var(--glow-red); }
+  .phase-title.pick { color: var(--pick-color); text-shadow: 0 0 20px rgba(0,229,160,0.3); }
+  .phase-title.done { color: var(--gold); text-shadow: 0 0 20px rgba(255,216,77,0.3); }
+  .current-participant {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 4px;
+  }
+  .current-participant span { color: var(--accent); }
 
-.phase-banner{text-align:center;margin-bottom:1.25rem}
-.phase-eyebrow{font-size:.68rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem}
-.phase-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,5vw,2.8rem);letter-spacing:.06em}
-.phase-title.ban{color:var(--ban);text-shadow:0 0 22px rgba(255,64,96,.3)}
-.phase-title.pick{color:var(--pick);text-shadow:0 0 22px rgba(0,229,160,.3)}
-.phase-title.done{color:var(--gold);text-shadow:0 0 22px rgba(255,216,77,.3)}
-.phase-sub{font-size:.92rem;color:var(--text);margin-top:.3rem}
-.phase-sub span{color:var(--accent);font-weight:700}
+  .progress-bar {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .progress-step {
+    width: 32px;
+    height: 5px;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+  .progress-step.ban-done { background: var(--ban-color); }
+  .progress-step.pick-done { background: var(--pick-color); }
+  .progress-step.active { background: var(--accent); animation: pulse-bar 1s ease-in-out infinite; }
+  @keyframes pulse-bar { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
 
-.progress-bar{display:flex;gap:3px;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap}
-.prog-step{width:30px;height:5px;border-radius:2px;background:var(--border);transition:background .3s}
-.prog-step.ban-done{background:var(--ban)}
-.prog-step.pick-done{background:var(--pick)}
-.prog-step.active{background:var(--accent);animation:progPulse 1s ease-in-out infinite}
-@keyframes progPulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .draft-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    gap: 16px;
+    align-items: start;
+  }
 
-.draft-grid{display:grid;grid-template-columns:260px 1fr 260px;gap:1rem;align-items:start}
-@media(max-width:900px){.draft-grid{grid-template-columns:1fr}.side-panel{display:grid!important;grid-template-columns:1fr 1fr;gap:.5rem}}
-@media(max-width:520px){.side-panel{grid-template-columns:1fr!important}}
+  .side-panel { display: flex; flex-direction: column; gap: 8px; }
+  .side-panel-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 4px;
+    margin-bottom: 4px;
+  }
 
-/* Side panels */
-.side-panel{display:flex;flex-direction:column;gap:.5rem}
-.side-lbl{font-size:.65rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:.2rem}
+  .participant-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .participant-card.is-active {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,200,255,0.15);
+  }
+  .participant-card .pc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .pc-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+  .pc-status {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .pc-status.waiting { background: rgba(90,96,128,0.2); color: var(--muted); }
+  .pc-status.banning { background: rgba(255,64,96,0.15); color: var(--ban-color); border: 1px solid rgba(255,64,96,0.3); }
+  .pc-status.picking { background: rgba(0,229,160,0.15); color: var(--pick-color); border: 1px solid rgba(0,229,160,0.3); }
+  .pc-status.done { background: rgba(255,216,77,0.12); color: var(--gold); border: 1px solid rgba(255,216,77,0.2); }
 
-.pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:.82rem 1rem;transition:border-color .2s,box-shadow .2s}
-.pcard.is-active{border-color:var(--accent);box-shadow:0 0 14px rgba(0,200,255,.15)}
-.pcard-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}
-.pcard-name{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:.98rem;
-  letter-spacing:.05em;text-transform:uppercase}
-.pcard-status{font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  padding:.15rem .55rem;border-radius:3px}
-.pcard-status.waiting{background:rgba(107,117,133,.15);color:var(--muted)}
-.pcard-status.banning{background:rgba(255,64,96,.13);color:var(--ban);border:1px solid rgba(255,64,96,.28)}
-.pcard-status.picking{background:rgba(0,229,160,.13);color:var(--pick);border:1px solid rgba(0,229,160,.28)}
-.pcard-status.done{background:rgba(255,216,77,.1);color:var(--gold);border:1px solid rgba(255,216,77,.2)}
-.pcard-slot{display:flex;align-items:center;gap:.6rem;padding:.38rem 0;
-  border-top:1px solid var(--border);font-size:.8rem}
-.slot-lbl{font-size:.58rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;min-width:28px}
-.slot-lbl.ban{color:var(--ban)}
-.slot-lbl.pick{color:var(--pick)}
-.slot-val{font-weight:600;font-size:.82rem}
-.slot-empty{color:var(--muted);font-style:italic;font-size:.75rem}
+  .pc-slot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+  }
+  .pc-slot-label {
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+    min-width: 32px;
+  }
+  .pc-slot.ban .pc-slot-label { color: var(--ban-color); }
+  .pc-slot.pick .pc-slot-label { color: var(--pick-color); }
+  .pc-slot .pc-slot-value { font-weight: 600; color: var(--text); }
+  .pc-slot .pc-slot-empty { color: var(--muted); font-style: italic; font-size: 0.78rem; }
 
-/* Pool */
-.pool-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem}
-.pool-topbar{display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:.85rem;gap:.75rem;flex-wrap:wrap}
-.pool-lbl{font-size:.65rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-.pool-search{flex:1;max-width:240px;background:var(--bg);border:1px solid var(--border);
-  color:var(--text);padding:.52rem .85rem;font-family:'Barlow',sans-serif;font-size:.85rem;
-  border-radius:6px;outline:none;transition:border-color .2s}
-.pool-search:focus{border-color:var(--accent)}
-.pool-filters{display:flex;gap:.35rem;flex-wrap:wrap}
-.filter-btn{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;padding:.32rem .72rem;
-  border:1px solid var(--border);background:transparent;color:var(--muted);
-  border-radius:5px;cursor:pointer;transition:all .15s}
-.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent)}
+  .player-pool-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+  }
+  .pool-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .pool-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pool-search {
+    flex: 1;
+    max-width: 260px;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+  }
+  .pool-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); }
 
-.player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));
-  gap:.55rem;max-height:500px;overflow-y:auto;padding-right:4px}
-.player-grid::-webkit-scrollbar{width:4px}
-.player-grid::-webkit-scrollbar-track{background:var(--bg)}
-.player-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+  .player-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+    max-height: 520px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .player-grid::-webkit-scrollbar { width: 4px; }
+  .player-grid::-webkit-scrollbar-track { background: var(--bg); }
+  .player-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-.ppool-card{background:var(--surface2);border:1px solid var(--border);border-radius:7px;
-  padding:.82rem .72rem .65rem;cursor:pointer;transition:all .15s;
-  position:relative;overflow:hidden;text-align:center}
-.ppool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--accent);transform:scaleX(0);transition:transform .2s;transform-origin:left}
-.ppool-card:hover{border-color:var(--accent);transform:translateY(-2px)}
-.ppool-card:hover::before{transform:scaleX(1)}
-.ppool-card.banned{border-color:rgba(255,64,96,.28);background:rgba(255,64,96,.04);
-  cursor:not-allowed;opacity:.45}
-.ppool-card.banned::after{content:'GEBANNT';position:absolute;inset:0;display:flex;
-  align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;
-  font-size:.7rem;letter-spacing:.1em;color:var(--ban);background:rgba(8,11,14,.72)}
-.ppool-card.picked{border-color:rgba(0,229,160,.2);background:rgba(0,229,160,.03);
-  cursor:not-allowed;opacity:.38}
-.ppool-card.picked::after{content:'GEPICKT';position:absolute;inset:0;display:flex;
-  align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;
-  font-size:.7rem;letter-spacing:.1em;color:var(--pick);background:rgba(8,11,14,.72)}
+  .player-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 10px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+  .player-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.2s;
+    transform-origin: left;
+  }
+  .player-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .player-card:hover::before { transform: scaleX(1); }
+  .player-card.banned {
+    border-color: rgba(255,64,96,0.3);
+    background: rgba(255,64,96,0.05);
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .player-card.banned::after {
+    content: 'GEBANNT';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--ban-color);
+    background: rgba(10,12,16,0.7);
+  }
+  .player-card.picked {
+    border-color: rgba(0,229,160,0.2);
+    background: rgba(0,229,160,0.03);
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+  .player-card.picked::after {
+    content: 'GEPICKT';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--pick-color);
+    background: rgba(10,12,16,0.7);
+  }
 
-.pp-avatar{width:46px;height:46px;border-radius:50%;background:var(--border);
-  margin:0 auto .6rem;display:flex;align-items:center;justify-content:center;
-  font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--accent);
-  overflow:hidden;border:2px solid var(--border)}
-.pp-avatar img{width:100%;height:100%;object-fit:cover}
-.pp-name{font-weight:700;font-size:.78rem;line-height:1.2;margin-bottom:.18rem}
-.pp-pos{font-size:.62rem;font-weight:600;letter-spacing:.12em;color:var(--muted);
-  text-transform:uppercase;margin-bottom:.3rem}
-.pp-rating{font-family:'Bebas Neue',sans-serif;font-weight:700;font-size:.95rem;color:var(--gold)}
+  .pc-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--border);
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent);
+    overflow: hidden;
+    border: 2px solid var(--border);
+  }
+  .pc-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-.action-bar{display:flex;justify-content:center;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap}
+  .pc-player-name {
+    font-weight: 700;
+    font-size: 0.82rem;
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+  .pc-pos {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .pc-rating {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--gold);
+  }
 
-/* ── RESULTS PAGE ── */
-.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));
-  gap:.85rem;margin-bottom:1.5rem}
-.result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
-.result-card-hd{padding:.82rem 1rem;background:var(--surface2);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between}
-.result-name{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:1.05rem;
-  letter-spacing:.05em;text-transform:uppercase}
-.result-body{padding:.82rem 1rem}
-.result-row{display:flex;align-items:center;gap:.65rem;padding:.45rem 0;
-  border-bottom:1px solid var(--border);font-size:.85rem}
-.result-row:last-child{border-bottom:none}
-.result-type{font-size:.6rem;font-weight:700;letter-spacing:.14em;min-width:28px}
-.result-type.ban{color:var(--ban)}
-.result-type.pick{color:var(--pick)}
-.result-player{flex:1;font-weight:600}
-.result-rating{font-family:'Bebas Neue',sans-serif;font-weight:700;font-size:.88rem;color:var(--gold)}
+  .action-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+  }
 
-/* Toast */
-.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(70px);
-  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-  padding:.75rem 1.4rem;font-size:.85rem;font-weight:600;z-index:1000;
-  transition:transform .28s ease;pointer-events:none;white-space:nowrap}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.ban{border-color:rgba(255,64,96,.45);color:var(--ban)}
-.toast.pick{border-color:rgba(0,229,160,.45);color:var(--pick)}
+  .results-wrap {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 24px;
+  }
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .result-card-header {
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .result-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+  .result-body { padding: 12px 16px; }
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.87rem;
+  }
+  .result-row:last-child { border-bottom: none; }
+  .result-type {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    min-width: 32px;
+  }
+  .result-type.ban { color: var(--ban-color); }
+  .result-type.pick { color: var(--pick-color); }
+  .result-player { font-weight: 600; flex: 1; }
+  .result-rating {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--gold);
+  }
 
-/* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;
-  display:none;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;
-  padding:1.75rem;max-width:420px;width:90%}
-.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;
-  letter-spacing:.08em;text-transform:uppercase;margin-bottom:.85rem;color:var(--ban)}
-.modal-body{margin-bottom:1.25rem;font-size:.88rem;color:var(--muted);line-height:1.6}
-.modal-actions{display:flex;gap:.65rem;justify-content:flex-end}
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 24px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.ban { border-color: var(--ban-color); color: var(--ban-color); }
+  .toast.pick { border-color: var(--pick-color); color: var(--pick-color); }
 
-.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.88rem}
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px;
+    max-width: 460px;
+    width: 90%;
+  }
+  .modal-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    color: var(--accent);
+  }
+  .modal-body { margin-bottom: 20px; font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
-/* ── LOGIN OVERLAY ── */
-.login-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.88);
-  backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:1rem}
-.login-overlay.open{display:flex}
-.login-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;
-  width:100%;max-width:380px;overflow:hidden}
-.login-box-header{padding:1.25rem 1.5rem;background:linear-gradient(135deg,rgba(0,200,255,.07),rgba(0,200,255,.02));
-  border-bottom:1px solid var(--border);text-align:center}
-.login-box-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.1em;
-  color:var(--accent);text-shadow:0 0 18px rgba(0,200,255,.3)}
-.login-box-sub{font-size:.75rem;color:var(--muted);margin-top:.25rem;letter-spacing:.06em}
-.login-box-body{padding:1.5rem}
-.login-step-label{font-size:.65rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:.45rem}
-.login-select-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.45rem;margin-bottom:1rem;
-  max-height:220px;overflow-y:auto;padding-right:2px}
-.login-select-grid::-webkit-scrollbar{width:3px}
-.login-select-grid::-webkit-scrollbar-thumb{background:var(--border)}
-.login-player-btn{background:var(--surface2);border:1px solid var(--border);border-radius:7px;
-  padding:.65rem .6rem;font-family:'Barlow',sans-serif;font-size:.82rem;font-weight:700;
-  color:var(--text);cursor:pointer;transition:all .15s;text-align:center;
-  display:flex;flex-direction:column;align-items:center;gap:.3rem}
-.login-player-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,200,255,.06)}
-.login-player-btn.selected{border-color:var(--accent);background:rgba(0,200,255,.1);color:var(--accent)}
-.login-player-btn.logged-in{border-color:rgba(0,229,160,.3);background:rgba(0,229,160,.05);
-  color:var(--pick);cursor:default;opacity:.6}
-.login-player-btn .lp-init{width:32px;height:32px;border-radius:50%;
-  background:linear-gradient(135deg,var(--green-dark),rgba(0,230,118,.28));
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Bebas Neue',sans-serif;font-size:.9rem;color:#000;flex-shrink:0;overflow:hidden}
-.login-player-btn .lp-init img{width:100%;height:100%;object-fit:cover}
-.login-player-btn .lp-name{font-size:.78rem;font-weight:700;line-height:1.2}
-.login-player-btn .lp-done{font-size:.6rem;color:var(--pick);letter-spacing:.08em}
-.login-pw-row{display:flex;gap:.5rem;margin-bottom:1rem}
-.login-pw-row input{flex:1;background:var(--bg);border:1px solid var(--border);
-  color:var(--text);padding:.65rem .85rem;border-radius:7px;font-family:'Barlow',sans-serif;
-  font-size:1rem;letter-spacing:.2em;text-align:center;outline:none;transition:border-color .2s}
-.login-pw-row input:focus{border-color:var(--accent)}
-.login-error{font-size:.78rem;color:var(--ban);text-align:center;margin-bottom:.75rem;
-  min-height:1.1rem;letter-spacing:.04em}
-.login-divider{height:1px;background:var(--border);margin:.85rem 0}
+  nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: relative;
+    z-index: 5;
+  }
+  .nav-tab {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    padding: 14px 24px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-/* Passwort-Liste im Admin */
-.pw-list{display:flex;flex-direction:column;gap:.4rem}
-.pw-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;
-  background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.6rem .95rem}
-.pw-item-name{font-weight:700;font-size:.88rem}
-.pw-item-code{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.25em;
-  color:var(--accent);background:rgba(0,200,255,.07);border:1px solid rgba(0,200,255,.2);
-  border-radius:5px;padding:.1rem .65rem;min-width:70px;text-align:center}
-.pw-regenerate-btn{background:none;border:none;color:var(--muted);cursor:pointer;
-  font-size:.85rem;padding:.2rem .4rem;border-radius:4px;transition:color .2s}
-.pw-regenerate-btn:hover{color:var(--accent)}
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
 
+  @media (max-width: 900px) {
+    .draft-grid { grid-template-columns: 1fr; }
+    .side-panel { display: grid; grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .side-panel { grid-template-columns: 1fr; }
+    header { padding: 14px 16px; }
+    .player-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+  }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="topbar-logo">UFL <span>DRAFT</span></div>
+<header>
+  <div class="logo">UFL <span>DRAFT</span></div>
   <div class="season-badge" id="seasonLabel">Spieltag —</div>
-  <a href="index.html" class="topbar-back">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    Zur Liga
-  </a>
-</div>
+</header>
 
-<!-- NAV TABS -->
-<div style="margin-top:58px">
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('admin',this)">⚙ Admin</button>
-    <button class="nav-tab" onclick="showPage('passwords',this)">🔑 Passwörter</button>
-    <button class="nav-tab" onclick="showPage('draft',this)">⚡ Draft</button>
-    <button class="nav-tab" onclick="showPage('results',this)">📋 Ergebnisse</button>
-  </div>
-</div>
+<nav>
+  <button class="nav-tab active" onclick="showPage('admin', this)">⚙ Admin</button>
+  <button class="nav-tab" id="draftTab" onclick="showPage('draft', this)">⚡ Draft</button>
+  <button class="nav-tab" id="resultsTab" onclick="showPage('results', this)">📋 Ergebnisse</button>
+</nav>
 
-<!-- ══════════ ADMIN PAGE ══════════ -->
+<!-- ADMIN PAGE -->
 <div class="page active" id="page-admin">
-<div class="wrap">
+  <div class="admin-wrap">
 
-  <!-- Spieltag -->
-  <div class="section-lbl">Spieltag-Info</div>
-  <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label>Spieltag-Bezeichnung</label>
-        <input type="text" id="matchdayName" placeholder="z.B. Spieltag 12 – Liga" value="Spieltag 1">
-      </div>
-    </div>
-    <button class="btn btn-accent" onclick="saveMatchday()">Spieltag setzen</button>
-  </div>
-
-  <!-- Teilnehmer -->
-  <div class="section-lbl">Teilnehmer (10 Spieler)</div>
-  <div class="card">
-    <!-- Liga-Spieler importieren -->
-    <div class="liga-import" id="ligaImportBanner">
-      <p>Liga-Spieler aus der Hauptseite verfügbar<br><span id="ligaImportCount"></span></p>
-      <button class="btn btn-pick btn-sm" onclick="importLigaParticipants()">⚽ Liga-Spieler laden</button>
-    </div>
-    <div class="form-row" style="margin-bottom:.85rem">
-      <div class="form-group" style="max-width:280px">
-        <label>Name manuell hinzufügen</label>
-        <input type="text" id="participantInput" placeholder="Teilnehmername" onkeydown="if(event.key==='Enter')addParticipant()">
-      </div>
-      <div style="display:flex;align-items:flex-end">
-        <button class="btn btn-accent" onclick="addParticipant()">+ Hinzufügen</button>
-      </div>
-    </div>
-    <div class="participant-list" id="participantList">
-      <div class="empty-state">Noch keine Teilnehmer</div>
-    </div>
-  </div>
-
-  <!-- Spieler-Pool -->
-  <div class="section-lbl">Spieler-Pool (Fußballer)</div>
-  <div class="card">
-    <div class="form-row">
-      <div class="form-group">
-        <label>Spielername</label>
-        <input type="text" id="playerName" placeholder="z.B. Erling Haaland" onkeydown="if(event.key==='Enter')addPlayerToPool()">
-      </div>
-      <div class="form-group" style="max-width:90px">
-        <label>Rating</label>
-        <input type="number" id="playerRating" placeholder="90" min="1" max="99" onkeydown="if(event.key==='Enter')addPlayerToPool()">
-      </div>
-      <div class="form-group" style="max-width:110px">
-        <label>Position</label>
-        <select id="playerPos">
-          <option>ST</option><option>CF</option><option>LW</option><option>RW</option>
-          <option>CAM</option><option>CM</option><option>CDM</option>
-          <option>LM</option><option>RM</option><option>LB</option>
-          <option>RB</option><option>CB</option><option>GK</option>
-        </select>
-      </div>
-      <div class="form-group" style="max-width:200px">
-        <label>Bild-URL (optional)</label>
-        <input type="text" id="playerImg" placeholder="https://...">
-      </div>
-      <div style="display:flex;align-items:flex-end">
-        <button class="btn btn-accent" onclick="addPlayerToPool()">+ Spieler</button>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem;flex-wrap:wrap;gap:.5rem">
-      <span id="poolCount" style="font-size:.78rem;color:var(--muted)">0 Spieler im Pool</span>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <button class="btn btn-ghost btn-sm" onclick="importSamplePlayers()">🔄 Beispiel-Spieler laden</button>
-        <button class="btn btn-ban btn-sm" onclick="clearPool()">Pool leeren</button>
-      </div>
-    </div>
-    <div class="player-pool-list" id="adminPlayerList">
-      <div class="empty-state">Keine Spieler im Pool</div>
-    </div>
-  </div>
-
-  <!-- Start -->
-  <div class="card">
-    <div class="start-bar">
-      <div class="start-info" id="startInfo">Bitte 10 Teilnehmer und Spieler eintragen.</div>
-      <button class="btn btn-pick" onclick="startDraft()" id="startBtn" disabled>▶ Draft starten</button>
-    </div>
-  </div>
-
-</div>
-</div>
-
-
-<!-- ══════════ PASSWORDS PAGE ══════════ -->
-<div class="page" id="page-passwords">
-<div class="wrap">
-  <div class="section-lbl">Spieler-Passwörter</div>
-  <div class="card">
-    <p style="font-size:.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.6">
-      Jeder Spieler bekommt ein automatisch generiertes Passwort. Schicke jedem seinen Code – 
-      beim Draft muss er sich damit einloggen bevor er bannen/picken kann.
-    </p>
-    <div style="display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:1rem">
-      <button class="btn btn-accent" onclick="generateAllPasswords()">🎲 Alle neu generieren</button>
-      <button class="btn btn-ghost" onclick="copyAllPasswords()">📋 Alle kopieren</button>
-    </div>
-    <div class="pw-list" id="pwList">
-      <div class="empty-state">Erst Teilnehmer im Admin-Tab hinzufügen.</div>
-    </div>
-  </div>
-</div>
-</div>
-
-<!-- ══════════ DRAFT PAGE ══════════ -->
-<div class="page" id="page-draft">
-<div class="draft-outer">
-
-  <div class="phase-banner">
-    <div class="phase-eyebrow" id="phaseLabel">Phase</div>
-    <div class="phase-title" id="phaseTitle">—</div>
-    <div class="phase-sub" id="phaseSub"></div>
-  </div>
-
-  <div class="progress-bar" id="progressBar"></div>
-
-  <div class="draft-grid">
-    <div class="side-panel" id="leftPanel"></div>
-    <div class="pool-wrap">
-      <div class="pool-topbar">
-        <div class="pool-lbl">Spieler-Pool</div>
-        <input type="text" class="pool-search" id="poolSearch" placeholder="Suchen…" oninput="renderPool()">
-        <div class="pool-filters">
-          <button class="filter-btn active" onclick="setFilter('ALL',this)">Alle</button>
-          <button class="filter-btn" onclick="setFilter('GK',this)">TW</button>
-          <button class="filter-btn" onclick="setFilter('DEF',this)">ABW</button>
-          <button class="filter-btn" onclick="setFilter('MID',this)">MIT</button>
-          <button class="filter-btn" onclick="setFilter('ATT',this)">ANG</button>
+    <div class="section-title">Spieltag-Info</div>
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Spieltag-Bezeichnung</label>
+          <input type="text" id="matchdayName" placeholder="z.B. Spieltag 12 – Liga A" value="Spieltag 1">
         </div>
       </div>
-      <div class="player-grid" id="playerGrid"></div>
+      <button class="btn btn-primary" onclick="saveMatchday()">Spieltag setzen</button>
     </div>
-    <div class="side-panel" id="rightPanel"></div>
+
+    <div class="section-title">Teilnehmer (10 Spieler)</div>
+    <div class="card">
+      <div class="form-row" style="margin-bottom:16px;">
+        <div class="form-group" style="max-width:280px;">
+          <label>Name hinzufügen</label>
+          <input type="text" id="participantInput" placeholder="Teilnehmername" onkeydown="if(event.key==='Enter')addParticipant()">
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button class="btn btn-primary" onclick="addParticipant()">+ Hinzufügen</button>
+        </div>
+      </div>
+      <div class="participant-list" id="participantList">
+        <div class="empty-state">Noch keine Teilnehmer</div>
+      </div>
+    </div>
+
+    <div class="section-title">Spieler-Pool</div>
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Spielername</label>
+          <input type="text" id="playerName" placeholder="z.B. Erling Haaland" onkeydown="if(event.key==='Enter')addPlayerToPool()">
+        </div>
+        <div class="form-group" style="max-width:100px;">
+          <label>Rating</label>
+          <input type="number" id="playerRating" placeholder="90" min="1" max="99" onkeydown="if(event.key==='Enter')addPlayerToPool()">
+        </div>
+        <div class="form-group" style="max-width:120px;">
+          <label>Position</label>
+          <select id="playerPos">
+            <option value="ST">ST</option>
+            <option value="CF">CF</option>
+            <option value="LW">LW</option>
+            <option value="RW">RW</option>
+            <option value="CAM">CAM</option>
+            <option value="CM">CM</option>
+            <option value="CDM">CDM</option>
+            <option value="LM">LM</option>
+            <option value="RM">RM</option>
+            <option value="LB">LB</option>
+            <option value="RB">RB</option>
+            <option value="CB">CB</option>
+            <option value="GK">GK</option>
+          </select>
+        </div>
+        <div class="form-group" style="max-width:200px;">
+          <label>Bild-URL (optional)</label>
+          <input type="text" id="playerImg" placeholder="https://...">
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <button class="btn btn-primary" onclick="addPlayerToPool()">+ Player</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <span id="poolCount" style="font-size:0.8rem;color:var(--muted);">0 Spieler</span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost btn-sm" onclick="importSamplePlayers()">🔄 Beispiel-Spieler laden</button>
+          <button class="btn btn-danger btn-sm" onclick="clearPool()">Pool leeren</button>
+        </div>
+      </div>
+      <div class="player-list" id="adminPlayerList">
+        <div class="empty-state">Keine Spieler im Pool</div>
+      </div>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="font-size:0.85rem;color:var(--muted);" id="startInfo">Bitte 10 Teilnehmer und Spieler eintragen.</div>
+      <button class="btn btn-success" onclick="startDraft()" id="startBtn" disabled>▶ Draft starten</button>
+    </div>
+
   </div>
+</div>
 
-  <div class="action-bar">
-    <button class="btn btn-ghost" onclick="undoAction()">↩ Rückgängig</button>
-    <button class="btn btn-ban" onclick="confirmReset()">✕ Neu starten</button>
+<!-- DRAFT PAGE -->
+<div class="page" id="page-draft">
+  <div class="draft-wrap">
+
+    <div class="phase-banner">
+      <div class="phase-label" id="phaseLabel">Phase</div>
+      <div class="phase-title" id="phaseTitle">—</div>
+      <div class="current-participant" id="currentParticipantInfo"></div>
+    </div>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="draft-grid">
+      <div class="side-panel" id="leftPanel">
+        <div class="side-panel-title">Teilnehmer</div>
+      </div>
+      <div class="player-pool-wrap">
+        <div class="pool-header">
+          <div class="pool-title">Spieler-Pool</div>
+          <input type="text" class="pool-search" id="poolSearch" placeholder="Spieler suchen..." oninput="renderPool()">
+          <div class="pool-filters">
+            <button class="filter-btn active" onclick="setFilter('ALL', this)">Alle</button>
+            <button class="filter-btn" onclick="setFilter('GK', this)">TW</button>
+            <button class="filter-btn" onclick="setFilter('DEF', this)">ABW</button>
+            <button class="filter-btn" onclick="setFilter('MID', this)">MIT</button>
+            <button class="filter-btn" onclick="setFilter('ATT', this)">ANG</button>
+          </div>
+        </div>
+        <div class="player-grid" id="playerGrid"></div>
+      </div>
+      <div class="side-panel" id="rightPanel">
+        <div class="side-panel-title">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-ghost" onclick="undoAction()">↩ Rückgängig</button>
+      <button class="btn btn-danger" onclick="confirmReset()">✕ Neu starten</button>
+    </div>
+
   </div>
-
-</div>
 </div>
 
-<!-- ══════════ RESULTS PAGE ══════════ -->
+<!-- RESULTS PAGE -->
 <div class="page" id="page-results">
-<div class="wrap">
-  <div class="section-lbl" id="resultsTitle">Ergebnisse</div>
-  <div class="results-grid" id="resultsGrid">
-    <div class="empty-state">Noch kein Draft durchgeführt.</div>
+  <div class="results-wrap">
+    <div class="section-title" id="resultsTitle">Ergebnisse</div>
+    <div class="results-grid" id="resultsGrid">
+      <div class="empty-state">Noch kein Draft durchgeführt.</div>
+    </div>
+    <div style="text-align:center;">
+      <button class="btn btn-ghost" onclick="exportResults()">⬇ Ergebnisse exportieren (JSON)</button>
+    </div>
   </div>
-  <div style="text-align:center;margin-top:1rem">
-    <button class="btn btn-ghost" onclick="exportResults()">⬇ Exportieren (JSON)</button>
-  </div>
-</div>
 </div>
 
-<!-- Modal -->
+<!-- Confirm Modal -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal">
     <div class="modal-title">Draft zurücksetzen?</div>
     <div class="modal-body">Alle Bans und Picks werden gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
-      <button class="btn btn-ban" onclick="resetDraft()">Zurücksetzen</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- LOGIN OVERLAY -->
-<div class="login-overlay" id="loginOverlay">
-  <div class="login-box">
-    <div class="login-box-header">
-      <div class="login-box-title">UFL DRAFT</div>
-      <div class="login-box-sub" id="loginPhaseHint">Ban-Phase läuft – wähle deinen Namen und gib dein Passwort ein</div>
-    </div>
-    <div class="login-box-body">
-      <div class="login-step-label">Wer bist du?</div>
-      <div class="login-select-grid" id="loginPlayerGrid"></div>
-      <div class="login-divider"></div>
-      <div class="login-step-label">Passwort</div>
-      <div class="login-pw-row">
-        <input type="password" id="loginPwInput" placeholder="••••" maxlength="8"
-          onkeydown="if(event.key==='Enter')attemptLogin()">
-      </div>
-      <div class="login-error" id="loginError"></div>
-      <button class="btn btn-accent" style="width:100%;justify-content:center" onclick="attemptLogin()">
-        Einloggen &amp; fortfahren →
-      </button>
+      <button class="btn btn-danger" onclick="resetDraft()">Zurücksetzen</button>
     </div>
   </div>
 </div>
@@ -544,173 +845,80 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════
+// STATE
 let state = {
   matchday: 'Spieltag 1',
-  participants: [],  // [{name, password}]
+  participants: [],
   pool: [],
-  draft: { phase:'idle', step:0, bans:{}, picks:{}, history:[] }
+  draft: {
+    phase: 'idle',
+    step: 0,
+    bans: {},
+    picks: {},
+    history: []
+  }
 };
+
 let posFilter = 'ALL';
-let loggedInIdx = null;  // welcher Spieler gerade eingeloggt ist
 
-// ══════════════════════════════════════
-//  PASSWORT GENERATOR
-// ══════════════════════════════════════
-function genPassword(){
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let pw = '';
-  for(let i=0;i<4;i++) pw += chars[Math.floor(Math.random()*chars.length)];
-  return pw;
-}
-
-function generateAllPasswords(){
-  state.participants.forEach(p => { p.password = genPassword(); });
-  renderPwList();
-  showToast('Passwörter generiert ✓','pick');
-}
-
-function regenPassword(i){
-  state.participants[i].password = genPassword();
-  renderPwList();
-  showToast('Passwort neu generiert','pick');
-}
-
-function renderPwList(){
-  const el = document.getElementById('pwList');
-  if(!state.participants.length){
-    el.innerHTML = '<div class="empty-state">Erst Teilnehmer im Admin-Tab hinzufügen.</div>';
-    return;
-  }
-  el.innerHTML = state.participants.map((p,i) => `
-    <div class="pw-item">
-      <div>
-        <div class="pw-item-name">${p.name}</div>
-        <div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">Passwort für den Draft</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:.5rem">
-        <div class="pw-item-code">${p.password||'—'}</div>
-        <button class="pw-regenerate-btn" onclick="regenPassword(${i})" title="Neu generieren">🎲</button>
-      </div>
-    </div>`).join('');
-}
-
-function copyAllPasswords(){
-  if(!state.participants.length){ showToast('Keine Spieler vorhanden','ban'); return; }
-  const text = state.participants
-    .map(p => `${p.name}: ${p.password||'—'}`)
-    .join('
-');
-  navigator.clipboard.writeText(text)
-    .then(()=>showToast('Passwörter kopiert ✓','pick'))
-    .catch(()=>showToast('Kopieren fehlgeschlagen','ban'));
-}
-
-// ══════════════════════════════════════
-//  LIGA-INTEGRATION (localStorage)
-// ══════════════════════════════════════
-function loadLigaPlayers(){
-  try {
-    const raw = localStorage.getItem('ufl_players');
-    return raw ? JSON.parse(raw) : [];
-  } catch(e){ return []; }
-}
-
-function importLigaParticipants(){
-  const ligaPlayers = loadLigaPlayers();
-  if(!ligaPlayers.length){ showToast('Keine Liga-Spieler gefunden','ban'); return; }
-  let added = 0;
-  ligaPlayers.forEach(p => {
-    if(state.participants.length >= 10) return;
-    if(state.participants.find(x => x.name.toLowerCase() === p.name.toLowerCase())) return;
-    state.participants.push({ name: p.name, password: genPassword() });
-    added++;
-  });
-  renderParticipantAdmin();
-  checkReady();
-  showToast(`${added} Liga-Spieler geladen ✓`, 'pick');
-}
-
-function updateLigaImportBanner(){
-  const ligaPlayers = loadLigaPlayers();
-  const banner = document.getElementById('ligaImportBanner');
-  const count  = document.getElementById('ligaImportCount');
-  if(ligaPlayers.length){
-    banner.style.display = 'flex';
-    count.textContent = `${ligaPlayers.length} Spieler gefunden`;
-  } else {
-    banner.style.display = 'none';
-  }
-}
-
-// ══════════════════════════════════════
-//  NAVIGATION
-// ══════════════════════════════════════
-function showPage(id, btn){
+// NAVIGATION
+function showPage(id, tabEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  if(btn) btn.classList.add('active');
-  if(id === 'results')   renderResults();
-  if(id === 'draft')     { renderDraft(); checkLoginRequired(); }
-  if(id === 'passwords') renderPwList();
+  if (tabEl) tabEl.classList.add('active');
+  if (id === 'results') renderResults();
+  if (id === 'draft') renderDraft();
 }
 
-// ══════════════════════════════════════
-//  ADMIN
-// ══════════════════════════════════════
-function saveMatchday(){
+// ADMIN
+function saveMatchday() {
   state.matchday = document.getElementById('matchdayName').value || 'Spieltag ?';
   document.getElementById('seasonLabel').textContent = state.matchday;
-  showToast('Spieltag: ' + state.matchday, '');
+  showToast('Spieltag gespeichert: ' + state.matchday, '');
   checkReady();
 }
 
-function addParticipant(){
+function addParticipant() {
   const input = document.getElementById('participantInput');
   const name = input.value.trim();
-  if(!name) return;
-  if(state.participants.length >= 10){ showToast('Max. 10 Teilnehmer','ban'); return; }
-  if(state.participants.find(p => p.name.toLowerCase() === name.toLowerCase())){
-    showToast('Name bereits vorhanden','ban'); return;
+  if (!name) return;
+  if (state.participants.length >= 10) { showToast('Max. 10 Teilnehmer', 'ban'); return; }
+  if (state.participants.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+    showToast('Name bereits vorhanden', 'ban'); return;
   }
-  state.participants.push({ name, password: genPassword() });
+  state.participants.push({ name });
   input.value = '';
   renderParticipantAdmin();
-  renderPwList();
   checkReady();
 }
 
-function removeParticipant(i){
+function removeParticipant(i) {
   state.participants.splice(i, 1);
   renderParticipantAdmin();
-  renderPwList();
   checkReady();
 }
 
-function renderParticipantAdmin(){
+function renderParticipantAdmin() {
   const el = document.getElementById('participantList');
-  if(!state.participants.length){
-    el.innerHTML = '<div class="empty-state">Noch keine Teilnehmer</div>'; return;
-  }
-  el.innerHTML = state.participants.map((p,i) => `
+  if (!state.participants.length) { el.innerHTML = '<div class="empty-state">Noch keine Teilnehmer</div>'; return; }
+  el.innerHTML = state.participants.map((p, i) => `
     <div class="participant-item">
       <span class="p-num">${i+1}</span>
       <span class="p-name">${p.name}</span>
-      <button class="btn btn-ban btn-sm" onclick="removeParticipant(${i})">✕</button>
-    </div>`).join('');
+      <button class="btn btn-danger btn-sm" onclick="removeParticipant(${i})">✕</button>
+    </div>
+  `).join('');
 }
 
-function addPlayerToPool(){
-  const name   = document.getElementById('playerName').value.trim();
+function addPlayerToPool() {
+  const name = document.getElementById('playerName').value.trim();
   const rating = parseInt(document.getElementById('playerRating').value) || 80;
-  const pos    = document.getElementById('playerPos').value;
-  const img    = document.getElementById('playerImg').value.trim();
-  if(!name) return;
-  if(state.pool.find(p => p.name.toLowerCase() === name.toLowerCase())){
-    showToast('Spieler bereits im Pool','ban'); return;
+  const pos = document.getElementById('playerPos').value;
+  const img = document.getElementById('playerImg').value.trim();
+  if (!name) return;
+  if (state.pool.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+    showToast('Spieler bereits im Pool', 'ban'); return;
   }
   state.pool.push({ name, rating, pos, img });
   document.getElementById('playerName').value = '';
@@ -720,30 +928,33 @@ function addPlayerToPool(){
   checkReady();
 }
 
-function removeFromPool(i){
-  state.pool.splice(i,1);
-  renderAdminPool(); checkReady();
+function removeFromPool(i) {
+  state.pool.splice(i, 1);
+  renderAdminPool();
+  checkReady();
 }
 
-function clearPool(){
+function clearPool() {
   state.pool = [];
-  renderAdminPool(); checkReady();
+  renderAdminPool();
+  checkReady();
 }
 
-function renderAdminPool(){
+function renderAdminPool() {
   const el = document.getElementById('adminPlayerList');
-  document.getElementById('poolCount').textContent = state.pool.length + ' Spieler im Pool';
-  if(!state.pool.length){ el.innerHTML = '<div class="empty-state">Keine Spieler im Pool</div>'; return; }
-  el.innerHTML = state.pool.map((p,i) => `
-    <div class="pool-item">
+  document.getElementById('poolCount').textContent = state.pool.length + ' Spieler';
+  if (!state.pool.length) { el.innerHTML = '<div class="empty-state">Keine Spieler im Pool</div>'; return; }
+  el.innerHTML = state.pool.map((p, i) => `
+    <div class="player-item">
       <span class="pi-name">${p.name}</span>
-      <span class="pi-pos">${p.pos}</span>
+      <span style="font-size:0.7rem;color:var(--muted)">${p.pos}</span>
       <span class="pi-rating">${p.rating}</span>
       <button class="pi-del" onclick="removeFromPool(${i})">✕</button>
-    </div>`).join('');
+    </div>
+  `).join('');
 }
 
-function importSamplePlayers(){
+function importSamplePlayers() {
   const samples = [
     {name:'Erling Haaland',rating:94,pos:'ST',img:''},
     {name:'Kylian Mbappé',rating:93,pos:'ST',img:''},
@@ -759,256 +970,157 @@ function importSamplePlayers(){
     {name:'Bukayo Saka',rating:87,pos:'RW',img:''},
     {name:'Harry Kane',rating:90,pos:'ST',img:''},
     {name:'Virgil van Dijk',rating:88,pos:'CB',img:''},
+    {name:'Marc-André ter Stegen',rating:88,pos:'GK',img:''},
     {name:'Alisson Becker',rating:89,pos:'GK',img:''},
     {name:'Trent Alexander-Arnold',rating:87,pos:'RB',img:''},
     {name:'Theo Hernandez',rating:86,pos:'LB',img:''},
     {name:'Gavi',rating:86,pos:'CM',img:''},
     {name:'Antoine Griezmann',rating:87,pos:'CAM',img:''},
-    {name:'Robert Lewandowski',rating:89,pos:'ST',img:''},
     {name:'Dušan Vlahović',rating:86,pos:'ST',img:''},
     {name:'Khvicha Kvaratskhelia',rating:87,pos:'LW',img:''},
     {name:'Ousmane Dembélé',rating:87,pos:'RW',img:''},
-    {name:'Marc-André ter Stegen',rating:88,pos:'GK',img:''},
+    {name:'Robert Lewandowski',rating:89,pos:'ST',img:''},
   ];
   let added = 0;
   samples.forEach(s => {
-    if(!state.pool.find(p => p.name.toLowerCase() === s.name.toLowerCase())){
+    if (!state.pool.find(p => p.name.toLowerCase() === s.name.toLowerCase())) {
       state.pool.push(s); added++;
     }
   });
-  renderAdminPool(); checkReady();
+  renderAdminPool();
+  checkReady();
   showToast(`${added} Spieler geladen`, 'pick');
 }
 
-function checkReady(){
-  const btn  = document.getElementById('startBtn');
+function checkReady() {
+  const btn = document.getElementById('startBtn');
   const info = document.getElementById('startInfo');
-  const ok   = state.participants.length === 10 && state.pool.length >= 10;
-  btn.disabled = !ok;
-  if(state.participants.length < 10)
+  const ready = state.participants.length === 10 && state.pool.length >= 10;
+  btn.disabled = !ready;
+  if (state.participants.length < 10) {
     info.textContent = `Noch ${10 - state.participants.length} Teilnehmer benötigt.`;
-  else if(state.pool.length < 10)
+  } else if (state.pool.length < 10) {
     info.textContent = `Mindestens ${10 - state.pool.length} weitere Spieler benötigt.`;
-  else
-    info.textContent = `✓ Bereit — ${state.participants.length} Teilnehmer, ${state.pool.length} Spieler.`;
+  } else {
+    info.textContent = `✓ Bereit — ${state.participants.length} Teilnehmer, ${state.pool.length} Spieler im Pool.`;
+  }
 }
 
-// ══════════════════════════════════════
-//  DRAFT LOGIC
-// ══════════════════════════════════════
-function startDraft(){
-  // Stelle sicher alle Spieler ein Passwort haben
-  state.participants.forEach(p => { if(!p.password) p.password = genPassword(); });
-  state.draft = { phase:'ban', step:0, bans:{}, picks:{}, history:[] };
-  loggedInIdx = null;
+// DRAFT LOGIC
+function startDraft() {
+  state.draft = { phase: 'ban', step: 0, bans: {}, picks: {}, history: [] };
   document.getElementById('seasonLabel').textContent = state.matchday;
-  const tabs = document.querySelectorAll('.nav-tab');
-  showPage('draft', tabs[2]);
+  const draftTab = document.getElementById('draftTab');
+  showPage('draft', draftTab);
   renderDraft();
-  showLoginOverlay();
 }
 
-function currentTurn(){
+function currentTurn() {
   const s = state.draft.step;
-  if(s < 10)  return { phase:'ban',  participantIdx: s };
-  if(s < 20)  return { phase:'pick', participantIdx: s - 10 };
-  return { phase:'done', participantIdx: -1 };
+  if (s < 10) return { phase: 'ban', participantIdx: s };
+  if (s < 20) return { phase: 'pick', participantIdx: s - 10 };
+  return { phase: 'done', participantIdx: -1 };
 }
 
-// ══════════════════════════════════════
-//  LOGIN SYSTEM
-// ══════════════════════════════════════
-function showLoginOverlay(){
+function handlePlayerClick(playerName) {
   const { phase, participantIdx } = currentTurn();
-  if(phase === 'done') return;
-  loggedInIdx = null;
-  const hint = document.getElementById('loginPhaseHint');
-  hint.textContent = phase === 'ban'
-    ? 'Ban-Phase – wähle deinen Namen und gib dein Passwort ein'
-    : 'Pick-Phase – wähle deinen Namen und gib dein Passwort ein';
-  renderLoginGrid();
-  document.getElementById('loginPwInput').value = '';
-  document.getElementById('loginError').textContent = '';
-  document.getElementById('loginOverlay').classList.add('open');
-  setTimeout(()=>document.getElementById('loginPwInput').focus(), 120);
-}
-
-function renderLoginGrid(){
-  const { participantIdx } = currentTurn();
-  const grid = document.getElementById('loginPlayerGrid');
-  const ligaPlayers = loadLigaPlayers();
-  const pMap = {};
-  ligaPlayers.forEach(p => pMap[p.name] = p);
-
-  grid.innerHTML = state.participants.map((p,i) => {
-    const isCurrentTurn = i === participantIdx;
-    const alreadyDone = state.draft.bans[i] !== undefined && state.draft.picks[i] !== undefined;
-    const init = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const ligaP = pMap[p.name];
-    const av = ligaP?.avatar
-      ? `<img src="${ligaP.avatar}" onerror="this.parentElement.textContent='${init}'">`
-      : init;
-    if(alreadyDone){
-      return `<div class="login-player-btn logged-in">
-        <div class="lp-init">${av}</div>
-        <div class="lp-name">${p.name}</div>
-        <div class="lp-done">✓ Fertig</div>
-      </div>`;
-    }
-    return `<div class="login-player-btn ${isCurrentTurn?'selected':''}" onclick="selectLoginPlayer(${i},this)">
-      <div class="lp-init">${av}</div>
-      <div class="lp-name">${p.name}</div>
-      ${isCurrentTurn?'<div style="font-size:.6rem;color:var(--accent)">Du bist dran</div>':''}
-    </div>`;
-  }).join('');
-}
-
-let selectedLoginIdx = null;
-function selectLoginPlayer(i, el){
-  selectedLoginIdx = i;
-  document.querySelectorAll('.login-player-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('loginError').textContent = '';
-  document.getElementById('loginPwInput').focus();
-}
-
-function attemptLogin(){
-  const pw = document.getElementById('loginPwInput').value.trim().toUpperCase();
-  const errEl = document.getElementById('loginError');
-
-  if(selectedLoginIdx === null){
-    errEl.textContent = 'Bitte zuerst deinen Namen wählen.'; return;
-  }
-  if(!pw){ errEl.textContent = 'Passwort eingeben.'; return; }
-
-  const { participantIdx } = currentTurn();
-  const p = state.participants[selectedLoginIdx];
-
-  if(selectedLoginIdx !== participantIdx){
-    errEl.textContent = `Du bist nicht dran. Warten auf: ${state.participants[participantIdx].name}`; return;
-  }
-  if(pw !== p.password){
-    errEl.textContent = 'Falsches Passwort. Versuche es erneut.';
-    document.getElementById('loginPwInput').value = '';
-    document.getElementById('loginPwInput').focus();
-    return;
-  }
-
-  // Login erfolgreich
-  loggedInIdx = selectedLoginIdx;
-  selectedLoginIdx = null;
-  document.getElementById('loginOverlay').classList.remove('open');
-  showToast(`${p.name} eingeloggt – du bist dran!`, 'pick');
-}
-
-function checkLoginRequired(){
-  const { phase } = currentTurn();
-  if(phase === 'done') return;
-  if(loggedInIdx === null) showLoginOverlay();
-}
-
-function handlePlayerClick(playerName){
-  const { phase, participantIdx } = currentTurn();
-  if(phase === 'done') return;
-
-  // Login-Check: ist der richtige Spieler eingeloggt?
-  if(loggedInIdx !== participantIdx){
-    showLoginOverlay(); return;
-  }
+  if (phase === 'done') return;
 
   const player = state.pool.find(p => p.name === playerName);
-  if(!player) return;
-  if(state.draft.bans[playerName] !== undefined) return;
-  if(state.draft.picks[playerName] !== undefined) return;
+  if (!player) return;
+  if (state.draft.bans[playerName] !== undefined) return;
+  if (state.draft.picks[playerName] !== undefined) return;
 
-  if(phase === 'ban'){
-    const alreadyBanned = Object.entries(state.draft.bans).find(([k]) => +k === participantIdx);
-    if(alreadyBanned) return;
+  // Check by value, not key
+  const bannedValues = Object.values(state.draft.bans);
+  const pickedValues = Object.values(state.draft.picks);
+  if (bannedValues.includes(playerName) || pickedValues.includes(playerName)) return;
+
+  if (phase === 'ban') {
+    const alreadyBanned = Object.keys(state.draft.bans).map(Number).includes(participantIdx);
+    if (alreadyBanned) return;
     state.draft.bans[participantIdx] = playerName;
-    state.draft.history.push({ participantIdx, action:'ban', playerName });
+    state.draft.history.push({ participantIdx, action: 'ban', playerName });
     showToast(`${state.participants[participantIdx].name} bannt ${playerName}`, 'ban');
   } else {
-    const alreadyPicked = Object.entries(state.draft.picks).find(([k]) => +k === participantIdx);
-    if(alreadyPicked) return;
+    const alreadyPicked = Object.keys(state.draft.picks).map(Number).includes(participantIdx);
+    if (alreadyPicked) return;
     state.draft.picks[participantIdx] = playerName;
-    state.draft.history.push({ participantIdx, action:'pick', playerName });
+    state.draft.history.push({ participantIdx, action: 'pick', playerName });
     showToast(`${state.participants[participantIdx].name} pickt ${playerName}`, 'pick');
   }
 
-  // Nach dem Pick/Ban: ausloggen und nächsten einloggen lassen
-  loggedInIdx = null;
   state.draft.step++;
-  if(state.draft.step === 10) state.draft.phase = 'pick';
-  if(state.draft.step >= 20){ state.draft.phase = 'done'; renderDraft(); return; }
+  if (state.draft.step === 10) state.draft.phase = 'pick';
+  if (state.draft.step >= 20) state.draft.phase = 'done';
+
   renderDraft();
-  // Kurze Pause dann Login für nächsten Spieler
-  setTimeout(showLoginOverlay, 800);
 }
 
-function undoAction(){
-  if(!state.draft.history.length) return;
+function undoAction() {
+  if (!state.draft.history.length) return;
   const last = state.draft.history.pop();
-  if(last.action === 'ban') delete state.draft.bans[last.participantIdx];
+  if (last.action === 'ban') delete state.draft.bans[last.participantIdx];
   else delete state.draft.picks[last.participantIdx];
   state.draft.step--;
   state.draft.phase = state.draft.step < 10 ? 'ban' : state.draft.step < 20 ? 'pick' : 'done';
-  loggedInIdx = null;
   renderDraft();
-  showToast('Rückgängig gemacht', '');
-  setTimeout(showLoginOverlay, 600);
+  showToast('Aktion rückgängig gemacht', '');
 }
 
-function confirmReset(){ document.getElementById('confirmModal').classList.add('open'); }
-function closeModal()  { document.getElementById('confirmModal').classList.remove('open'); }
-function resetDraft(){
+function confirmReset() {
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('open');
+}
+
+function resetDraft() {
   closeModal();
-  state.draft = { phase:'idle', step:0, bans:{}, picks:{}, history:[] };
-  loggedInIdx = null;
-  const tabs = document.querySelectorAll('.nav-tab');
-  showPage('admin', tabs[0]);
+  state.draft = { phase: 'idle', step: 0, bans: {}, picks: {}, history: [] };
+  const adminTab = document.querySelector('.nav-tab');
+  showPage('admin', adminTab);
 }
 
-// ══════════════════════════════════════
-//  RENDER DRAFT
-// ══════════════════════════════════════
-function renderDraft(){
+// RENDER DRAFT
+function renderDraft() {
   const { phase, participantIdx } = currentTurn();
 
-  // Banner
-  const title = document.getElementById('phaseTitle');
-  const lbl   = document.getElementById('phaseLabel');
-  const sub   = document.getElementById('phaseSub');
+  const phaseTitle = document.getElementById('phaseTitle');
+  const phaseLabel = document.getElementById('phaseLabel');
+  const cpInfo = document.getElementById('currentParticipantInfo');
 
-  if(phase === 'ban'){
-    title.textContent = 'BAN PHASE';
-    title.className = 'phase-title ban';
-    lbl.textContent = `Schritt ${state.draft.step + 1} von 10`;
+  if (phase === 'ban') {
+    phaseTitle.textContent = 'BAN PHASE';
+    phaseTitle.className = 'phase-title ban';
+    phaseLabel.textContent = `Schritt ${state.draft.step + 1} von 10`;
     const name = state.participants[participantIdx]?.name || '—';
-    sub.innerHTML = `Am Zug: <span>${name}</span> — Bitte einen Spieler bannen`;
-  } else if(phase === 'pick'){
-    title.textContent = 'PICK PHASE';
-    title.className = 'phase-title pick';
-    lbl.textContent = `Schritt ${state.draft.step - 9} von 10`;
+    cpInfo.innerHTML = `Am Zug: <span>${name}</span> — Bitte einen Spieler bannen`;
+  } else if (phase === 'pick') {
+    phaseTitle.textContent = 'PICK PHASE';
+    phaseTitle.className = 'phase-title pick';
+    phaseLabel.textContent = `Schritt ${state.draft.step - 9} von 10`;
     const name = state.participants[participantIdx]?.name || '—';
-    sub.innerHTML = `Am Zug: <span>${name}</span> — Bitte einen Spieler picken`;
+    cpInfo.innerHTML = `Am Zug: <span>${name}</span> — Bitte einen Spieler picken`;
   } else {
-    title.textContent = 'DRAFT ABGESCHLOSSEN';
-    title.className = 'phase-title done';
-    lbl.textContent = 'Fertig!';
-    sub.innerHTML = 'Alle Picks &amp; Bans vergeben';
+    phaseTitle.textContent = 'DRAFT ABGESCHLOSSEN';
+    phaseTitle.className = 'phase-title done';
+    phaseLabel.textContent = 'Fertig!';
+    cpInfo.innerHTML = 'Alle Picks &amp; Bans vergeben';
   }
 
   // Progress
   const pb = document.getElementById('progressBar');
   let steps = '';
-  for(let i=0;i<20;i++){
-    let cls = 'prog-step';
-    if(i < 10){
-      if(i < state.draft.step) cls += ' ban-done';
-      else if(i === state.draft.step && phase !== 'done') cls += ' active';
+  for (let i = 0; i < 20; i++) {
+    let cls = 'progress-step';
+    if (i < 10) {
+      if (i < state.draft.step) cls += ' ban-done';
+      else if (i === state.draft.step) cls += ' active';
     } else {
-      if(i < state.draft.step) cls += ' pick-done';
-      else if(i === state.draft.step && phase !== 'done') cls += ' active';
+      if (i < state.draft.step) cls += ' pick-done';
+      else if (i === state.draft.step) cls += ' active';
     }
     steps += `<div class="${cls}"></div>`;
   }
@@ -1018,151 +1130,171 @@ function renderDraft(){
   renderPool();
 }
 
-function renderSidePanels(activeIdx, phase){
-  const buildCard = i => {
+function renderSidePanels(activeIdx, phase) {
+  const left = document.getElementById('leftPanel');
+  const right = document.getElementById('rightPanel');
+
+  const buildCard = (i) => {
     const p = state.participants[i];
-    const isActive = phase !== 'done' && i === activeIdx;
-    const ban  = state.draft.bans[i];
+    const isActive = (phase !== 'done') && (i === activeIdx);
+    const ban = state.draft.bans[i];
     const pick = state.draft.picks[i];
+
     let status = 'waiting';
-    if(isActive && phase === 'ban')  status = 'banning';
-    else if(isActive && phase === 'pick') status = 'picking';
-    else if(ban !== undefined && pick !== undefined) status = 'done';
-    const statusLabel = {waiting:'Wartet',banning:'Bannt…',picking:'Pickt…',done:'Fertig'};
-    return `<div class="pcard ${isActive?'is-active':''}">
-      <div class="pcard-header">
-        <div class="pcard-name">${p.name}</div>
-        <div class="pcard-status ${status}">${statusLabel[status]}</div>
+    if (isActive && phase === 'ban') status = 'banning';
+    else if (isActive && phase === 'pick') status = 'picking';
+    else if (ban && pick) status = 'done';
+
+    const statusLabels = {waiting:'Wartet', banning:'Bannt…', picking:'Pickt…', done:'Fertig'};
+
+    return `
+      <div class="participant-card ${isActive ? 'is-active' : ''}">
+        <div class="pc-header">
+          <div class="pc-name">${p.name}</div>
+          <div class="pc-status ${status}">${statusLabels[status]}</div>
+        </div>
+        <div class="pc-slot ban">
+          <span class="pc-slot-label">BAN</span>
+          ${ban ? `<span class="pc-slot-value">${ban}</span>` : '<span class="pc-slot-empty">—</span>'}
+        </div>
+        <div class="pc-slot pick">
+          <span class="pc-slot-label">PICK</span>
+          ${pick ? `<span class="pc-slot-value">${pick}</span>` : '<span class="pc-slot-empty">—</span>'}
+        </div>
       </div>
-      <div class="pcard-slot ban">
-        <span class="slot-lbl ban">BAN</span>
-        ${ban !== undefined ? `<span class="slot-val">${ban}</span>` : '<span class="slot-empty">—</span>'}
-      </div>
-      <div class="pcard-slot pick">
-        <span class="slot-lbl pick">PICK</span>
-        ${pick !== undefined ? `<span class="slot-val">${pick}</span>` : '<span class="slot-empty">—</span>'}
-      </div>
-    </div>`;
+    `;
   };
-  document.getElementById('leftPanel').innerHTML  = '<div class="side-lbl">Teilnehmer 1–5</div>'  + [0,1,2,3,4].map(buildCard).join('');
-  document.getElementById('rightPanel').innerHTML = '<div class="side-lbl">Teilnehmer 6–10</div>' + [5,6,7,8,9].map(buildCard).join('');
+
+  left.innerHTML = '<div class="side-panel-title">Teilnehmer 1-5</div>' +
+    [0,1,2,3,4].map(buildCard).join('');
+  right.innerHTML = '<div class="side-panel-title">Teilnehmer 6-10</div>' +
+    [5,6,7,8,9].map(buildCard).join('');
 }
 
-const POS_GROUPS = {
-  GK:  ['GK'],
-  DEF: ['CB','LB','RB'],
-  MID: ['CDM','CM','CAM','LM','RM'],
-  ATT: ['ST','CF','LW','RW']
-};
-
-function setFilter(f, el){
+function setFilter(f, el) {
   posFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   renderPool();
 }
 
-function renderPool(){
+const POS_GROUPS = {
+  GK: ['GK'],
+  DEF: ['CB','LB','RB'],
+  MID: ['CDM','CM','CAM','LM','RM'],
+  ATT: ['ST','CF','LW','RW']
+};
+
+function renderPool() {
   const search = (document.getElementById('poolSearch')?.value || '').toLowerCase();
   const grid = document.getElementById('playerGrid');
-  if(!grid) return;
+  if (!grid) return;
+
   const bannedNames = new Set(Object.values(state.draft.bans));
   const pickedNames = new Set(Object.values(state.draft.picks));
+
   const filtered = state.pool.filter(p => {
-    if(search && !p.name.toLowerCase().includes(search)) return false;
-    if(posFilter !== 'ALL' && !(POS_GROUPS[posFilter]||[]).includes(p.pos)) return false;
+    if (search && !p.name.toLowerCase().includes(search)) return false;
+    if (posFilter !== 'ALL') {
+      const group = POS_GROUPS[posFilter] || [];
+      if (!group.includes(p.pos)) return false;
+    }
     return true;
   });
-  if(!filtered.length){ grid.innerHTML = '<div class="empty-state">Keine Spieler gefunden</div>'; return; }
+
+  if (!filtered.length) { grid.innerHTML = '<div class="empty-state">Keine Spieler gefunden</div>'; return; }
+
   const { phase } = currentTurn();
+
   grid.innerHTML = filtered.map(p => {
-    const isBanned  = bannedNames.has(p.name);
-    const isPicked  = pickedNames.has(p.name);
-    const canClick  = !isBanned && !isPicked && phase !== 'done';
-    const init = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const av = p.img
-      ? `<img src="${p.img}" onerror="this.style.display='none';this.parentNode.textContent='${init}'" alt="">`
-      : init;
-    const nameSafe = p.name.replace(/'/g,"\\'");
-    return `<div class="ppool-card ${isBanned?'banned':''} ${isPicked?'picked':''}"
-      ${canClick?`onclick="handlePlayerClick('${nameSafe}')"`:''}>
-      <div class="pp-avatar">${av}</div>
-      <div class="pp-name">${p.name}</div>
-      <div class="pp-pos">${p.pos}</div>
-      <div class="pp-rating">${p.rating}</div>
-    </div>`;
+    const isBanned = bannedNames.has(p.name);
+    const isPicked = pickedNames.has(p.name);
+    const isAvailable = !isBanned && !isPicked && phase !== 'done';
+
+    const initials = p.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const avatarContent = p.img
+      ? `<img src="${p.img}" onerror="this.style.display='none';this.nextSibling&&(this.nextSibling.style.display='flex')" alt="">`
+      : initials;
+
+    const safeName = p.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+    return `
+      <div class="player-card ${isBanned ? 'banned' : ''} ${isPicked ? 'picked' : ''}"
+           onclick="${isAvailable ? `handlePlayerClick('${safeName}')` : ''}">
+        <div class="pc-avatar">${avatarContent}</div>
+        <div class="pc-player-name">${p.name}</div>
+        <div class="pc-pos">${p.pos}</div>
+        <div class="pc-rating">${p.rating}</div>
+      </div>
+    `;
   }).join('');
 }
 
-// ══════════════════════════════════════
-//  RESULTS
-// ══════════════════════════════════════
-function renderResults(){
-  const grid  = document.getElementById('resultsGrid');
+// RESULTS
+function renderResults() {
+  const grid = document.getElementById('resultsGrid');
   const title = document.getElementById('resultsTitle');
   title.textContent = state.matchday + ' — Ergebnisse';
-  if(state.draft.phase !== 'done' && !Object.keys(state.draft.bans).length){
-    grid.innerHTML = '<div class="empty-state">Noch kein Draft durchgeführt.</div>'; return;
+
+  if (state.draft.phase !== 'done' && !Object.keys(state.draft.bans).length) {
+    grid.innerHTML = '<div class="empty-state">Noch kein Draft durchgeführt.</div>';
+    return;
   }
-  grid.innerHTML = state.participants.map((p,i) => {
-    const ban  = state.draft.bans[i];
+
+  grid.innerHTML = state.participants.map((p, i) => {
+    const ban = state.draft.bans[i];
     const pick = state.draft.picks[i];
-    const banPl  = state.pool.find(pl => pl.name === ban);
-    const pickPl = state.pool.find(pl => pl.name === pick);
-    return `<div class="result-card">
-      <div class="result-card-hd">
-        <div class="result-name">${p.name}</div>
-        <span style="font-size:.68rem;color:var(--muted)">#${i+1}</span>
-      </div>
-      <div class="result-body">
-        <div class="result-row">
-          <span class="result-type ban">BAN</span>
-          <span class="result-player">${ban||'—'}</span>
-          <span class="result-rating">${banPl?banPl.rating:''}</span>
+    const banPlayer = state.pool.find(pl => pl.name === ban);
+    const pickPlayer = state.pool.find(pl => pl.name === pick);
+    return `
+      <div class="result-card">
+        <div class="result-card-header">
+          <div class="result-name">${p.name}</div>
+          <span style="font-size:0.7rem;color:var(--muted);letter-spacing:1px;">#${i+1}</span>
         </div>
-        <div class="result-row">
-          <span class="result-type pick">PICK</span>
-          <span class="result-player">${pick||'—'}</span>
-          <span class="result-rating">${pickPl?pickPl.rating:''}</span>
+        <div class="result-body">
+          <div class="result-row">
+            <span class="result-type ban">BAN</span>
+            <span class="result-player">${ban || '—'}</span>
+            <span class="result-rating">${banPlayer ? banPlayer.rating : ''}</span>
+          </div>
+          <div class="result-row">
+            <span class="result-type pick">PICK</span>
+            <span class="result-player">${pick || '—'}</span>
+            <span class="result-rating">${pickPlayer ? pickPlayer.rating : ''}</span>
+          </div>
         </div>
       </div>
-    </div>`;
+    `;
   }).join('');
 }
 
-function exportResults(){
+function exportResults() {
   const data = {
     matchday: state.matchday,
     date: new Date().toLocaleDateString('de-DE'),
-    results: state.participants.map((p,i) => ({
+    results: state.participants.map((p, i) => ({
       participant: p.name,
-      ban:  state.draft.bans[i]  || null,
+      ban: state.draft.bans[i] || null,
       pick: state.draft.picks[i] || null
     }))
   };
-  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `ufl-draft-${state.matchday.replace(/\s+/g,'-')}.json`;
   a.click();
 }
 
-// ══════════════════════════════════════
-//  TOAST
-// ══════════════════════════════════════
-let toastTimer;
-function showToast(msg, type){
+// UTILS
+function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast ' + type + ' show';
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  t.className = 'toast ' + type;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// ══════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════
-updateLigaImportBanner();
 checkReady();
 </script>
 </body>
