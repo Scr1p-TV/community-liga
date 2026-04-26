@@ -182,13 +182,13 @@ footer{border-top:1px solid var(--border);padding:1.5rem clamp(1rem,4vw,2rem);
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 
 const defaultPlayers = [
-  {id:1,name:'BennyBroKenobi',team:''},
-  {id:2,name:'DatSeb',team:''},
-  {id:3,name:'AGE_Kevin',team:''},
-  {id:4,name:'Kira',team:''},
-  {id:5,name:'Askeladd',team:''},
-  {id:6,name:'Virent',team:''},
-  {id:7,name:'Scr1p',team:''},
+  {id:1,name:'BennyBroKenobi',team:'',avatar:'avatars/bennybrokenobi.png'},
+  {id:2,name:'DatSeb',        team:'',avatar:'avatars/datseb.png'},
+  {id:3,name:'AGE_Kevin',     team:'',avatar:'avatars/age_kevin.png'},
+  {id:4,name:'Kira',          team:'',avatar:'avatars/kira.png'},
+  {id:5,name:'Askeladd',      team:'',avatar:'avatars/askeladd.png'},
+  {id:6,name:'Virent',        team:'',avatar:'avatars/virent.png'},
+  {id:7,name:'Scr1p',         team:'',avatar:'avatars/scr1p.png'},
 ];
 
 let players  = load('ufl_players', defaultPlayers);
@@ -240,8 +240,9 @@ function renderPage(playerId){
   const init = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
 
   // Avatar
-  const avatarHTML = p.avatar
-    ? `<img src="${p.avatar}" alt="${p.name}" onerror="this.parentElement.innerHTML='${init}'">`
+  const avatarSrc = getAvatar(p);
+  const avatarHTML = avatarSrc
+    ? `<img src="${avatarSrc}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`
     : init;
 
   // Form letzte 5
@@ -363,9 +364,7 @@ function renderNotFound(){
   // Zeige alle Spieler als Übersicht wenn keine ID
   const cards = players.map(p => {
     const init = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const av = p.avatar
-      ? `<img src="${p.avatar}" style="width:100%;height:100%;object-fit:cover">`
-      : init;
+    const av = (() => { const s = getAvatar(p); return s ? `<img src="${s}" style="width:100%;height:100%;object-fit:cover">` : init; })();
     return `<a href="teilnehmer.html?id=${p.id}" style="
       display:flex;flex-direction:column;align-items:center;gap:.6rem;
       background:var(--card);border:1px solid var(--border);border-radius:12px;
@@ -401,6 +400,24 @@ function goToPlayer(id){
   window.location.href = 'teilnehmer.html?id=' + id;
 }
 
+
+// ══════════════════════════════════════
+//  AVATAR MAPPING
+// ══════════════════════════════════════
+const AVATAR_MAP = {
+  'BennyBroKenobi': 'avatars/bennybrokenobi.png',
+  'DatSeb':         'avatars/datseb.png',
+  'AGE_Kevin':      'avatars/age_kevin.png',
+  'Kira':           'avatars/kira.png',
+  'Askeladd':       'avatars/askeladd.png',
+  'Virent':         'avatars/virent.png',
+  'Scr1p':          'avatars/scr1p.png',
+};
+
+function getAvatar(player) {
+  if (player.avatar) return player.avatar;
+  return AVATAR_MAP[player.name] || null;
+}
 // ══════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════
