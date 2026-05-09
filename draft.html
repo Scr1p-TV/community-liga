@@ -584,6 +584,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
       <div class="start-info" id="startInfo">Bitte 10 Teilnehmer und Spieler eintragen.</div>
       <button class="btn btn-pick" onclick="startDraft()" id="startBtn" disabled>▶ Draft starten</button>
     </div>
+    <!-- Check-in Liste -->
+    <div id="checkinWrap" style="display:none;margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem">
+      <div class="section-lbl" style="margin-bottom:.65rem">Teilnehmer Check-in</div>
+      <div id="checkinList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.4rem"></div>
+    </div>
   </div>
 
 </div>
@@ -1163,14 +1168,47 @@ function importSamplePlayers(){
 function checkReady(){
   const btn  = document.getElementById('startBtn');
   const info = document.getElementById('startInfo');
-  const ok   = state.participants.length === 10 && state.pool.length >= 10;
+  const wrap = document.getElementById('checkinWrap');
+  const list = document.getElementById('checkinList');
+
+  const hasEnoughParticipants = state.participants.length === 10;
+  const hasEnoughPool = state.pool.length >= 10;
+  const allCheckedIn = hasEnoughParticipants &&
+    state.participants.every((_, i) => checkedInParticipants.has(i));
+  const ok = hasEnoughParticipants && hasEnoughPool && allCheckedIn;
+
   btn.disabled = !ok;
-  if(state.participants.length < 10)
+
+  if (!hasEnoughParticipants) {
     info.textContent = `Noch ${10 - state.participants.length} Teilnehmer benötigt.`;
-  else if(state.pool.length < 10)
+    if (wrap) wrap.style.display = 'none';
+  } else if (!hasEnoughPool) {
     info.textContent = `Mindestens ${10 - state.pool.length} weitere Spieler benötigt.`;
-  else
-    info.textContent = `✓ Bereit — ${state.participants.length} Teilnehmer, ${state.pool.length} Spieler.`;
+    if (wrap) wrap.style.display = 'none';
+  } else if (!allCheckedIn) {
+    const missing = state.participants.length - checkedInParticipants.size;
+    info.textContent = `⏳ Warten auf ${missing} Teilnehmer die sich noch nicht eingeloggt haben.`;
+    if (wrap) wrap.style.display = 'block';
+  } else {
+    info.textContent = `✓ Alle ${state.participants.length} Teilnehmer eingeloggt – bereit!`;
+    if (wrap) wrap.style.display = 'block';
+  }
+
+  // Render check-in list
+  if (list && hasEnoughParticipants) {
+    list.innerHTML = state.participants.map(function(p, i) {
+      const done = checkedInParticipants.has(i);
+      return '<div style="display:flex;align-items:center;gap:.5rem;background:var(--surface2);'
+        + 'border:1px solid ' + (done ? 'rgba(0,229,160,.3)' : 'var(--border)') + ';'
+        + 'border-radius:6px;padding:.45rem .75rem;font-size:.82rem">'
+        + '<span style="font-size:.9rem">' + (done ? '✅' : '⏳') + '</span>'
+        + '<span style="font-weight:600;flex:1">' + p.name + '</span>'
+        + (done
+          ? '<span style="font-size:.65rem;color:var(--pick);font-weight:700;letter-spacing:.08em">BEREIT</span>'
+          : '<span style="font-size:.65rem;color:var(--muted);letter-spacing:.08em">WARTET</span>')
+        + '</div>';
+    }).join('');
+  }
 }
 
 // ══════════════════════════════════════
@@ -1210,6 +1248,8 @@ function currentTurn(){
 function showLoginOverlay(){
   const { phase, participantIdx } = currentTurn();
   if(phase === 'done') return;
+  // Admin braucht kein Login-Overlay
+  if(isAdminLoggedIn) { loggedInIdx = participantIdx; return; }
   loggedInIdx = null;
   const hint = document.getElementById('loginPhaseHint');
   hint.textContent = phase === 'ban'
@@ -1309,8 +1349,10 @@ function handlePlayerClick(playerNameOrEl){
     return;
   }
 
-  // Login-Check: ist der richtige Spieler eingeloggt?
-  if(loggedInIdx !== participantIdx){
+  // Login-Check: Admin darf immer handeln, sonst muss der richtige Spieler eingeloggt sein
+  if(isAdminLoggedIn) {
+    loggedInIdx = participantIdx; // Admin agiert als aktueller Spieler
+  } else if(loggedInIdx !== participantIdx){
     showLoginOverlay(); return;
   }
 
@@ -1364,8 +1406,12 @@ function resetDraft(){
   closeModal();
   state.draft = { phase:'idle', step:0, bans:{}, picks:{}, history:[] };
   loggedInIdx = null;
+  isAdminLoggedIn = false;
+  checkedInParticipants = new Set();
+  saveCheckedIn();
   saveState();
   showPage('admin', document.getElementById('tab-admin'));
+  checkReady();
 }
 
 // ══════════════════════════════════════
@@ -1842,31 +1888,34 @@ function initAttemptParticipant() {
     document.getElementById('initParticipantPw').focus();
     return;
   }
-  // Participant: hide admin tabs, go to draft
+  // Teilnehmer einchecken
+  checkedInParticipants.add(initSelectedParticipantIdx);
+  saveCheckedIn();
+  checkReady();
   closeInitLogin('participant', initSelectedParticipantIdx);
 }
 
 function closeInitLogin(role, participantIdx) {
   document.getElementById('initLoginOverlay').style.display = 'none';
-  // Admin-only tabs
   var adminOnlyTabs = ['tab-admin','tab-passwords'];
   if (role === 'participant') {
+    // Teilnehmer: Admin-Tabs ausblenden, dann Draft-Login öffnen
     adminOnlyTabs.forEach(function(id){
       var el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
-    // Pre-set loggedInIdx so participant can act immediately
-    if (participantIdx !== undefined) loggedInIdx = participantIdx;
-    // Go to draft page
     var draftTab = document.getElementById('tab-draft');
     showPage('draft', draftTab);
-    showToast('Willkommen, ' + state.participants[participantIdx].name + '!', 'pick');
+    // Direkt das Draft-Login-Overlay öffnen (Bild 2)
+    // loggedInIdx NICHT setzen – das übernimmt attemptNormalLogin
+    showLoginOverlay();
   } else {
-    // Admin: make sure all tabs visible
+    // Admin: alle Tabs sichtbar
     adminOnlyTabs.forEach(function(id){
       var el = document.getElementById(id);
       if (el) el.style.display = '';
     });
+    isAdminLoggedIn = true;
     showToast('Admin eingeloggt ✓', 'pick');
   }
 }
@@ -1879,7 +1928,7 @@ checkReady();
 
 // Restore UI from saved state
 if (state.matchday) document.getElementById('seasonLabel').textContent = state.matchday;
-if (state.participants.length) { renderParticipantAdmin(); renderPwList(); }
+if (state.participants.length) { renderParticipantAdmin(); renderPwList(); checkReady(); }
 if (state.pool.length) renderAdminPool();
 
 // Show initial login modal
