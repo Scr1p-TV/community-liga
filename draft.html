@@ -403,33 +403,65 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
   min-height:1.1rem;letter-spacing:.04em}
 .login-divider{height:1px;background:var(--border);margin:.85rem 0}
 
-/* ── ADMIN LOCK OVERLAY ── */
-.admin-lock-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.93);
-  backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:1rem}
-.admin-lock-overlay.open{display:flex}
-.admin-lock-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;
-  width:100%;max-width:360px;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.6)}
-.admin-lock-header{padding:1.4rem 1.5rem 1.1rem;background:linear-gradient(135deg,rgba(255,64,96,.07),rgba(255,64,96,.02));
-  border-bottom:1px solid var(--border);text-align:center}
-.admin-lock-icon{font-size:2rem;margin-bottom:.4rem}
-.admin-lock-title{font-family:'Bebas Neue',sans-serif;font-size:1.55rem;letter-spacing:.1em;color:var(--ban)}
-.admin-lock-sub{font-size:.72rem;color:var(--muted);margin-top:.2rem;letter-spacing:.05em}
-.admin-lock-body{padding:1.5rem}
-.admin-lock-label{font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
-.admin-lock-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
-  padding:.72rem .9rem;border-radius:7px;font-family:'Barlow',sans-serif;font-size:1rem;
-  text-align:center;letter-spacing:.25em;outline:none;transition:border-color .2s;margin-bottom:.65rem}
-.admin-lock-input:focus{border-color:var(--ban);box-shadow:0 0 0 1px rgba(255,64,96,.12)}
-.admin-lock-error{font-size:.76rem;color:var(--ban);text-align:center;min-height:1.1rem;margin-bottom:.65rem;letter-spacing:.04em}
-.admin-lock-btn{width:100%;background:var(--ban);color:#fff;font-family:'Barlow Condensed',sans-serif;
-  font-weight:700;font-size:.88rem;letter-spacing:.14em;text-transform:uppercase;
-  padding:.68rem 1rem;border:none;border-radius:7px;cursor:pointer;transition:background .18s}
-.admin-lock-btn:hover{background:#ff6080}
-.admin-tab-locked{position:relative}
-.admin-tab-locked::after{content:'🔒';position:absolute;top:6px;right:4px;font-size:.55rem;opacity:.6}
-
 /* Passwort-Liste im Admin */
 .pw-list{display:flex;flex-direction:column;gap:.4rem}
+
+/* ══════════ INITIAL LOGIN MODAL ══════════ */
+.init-overlay{position:fixed;inset:0;z-index:9000;
+  background:rgba(0,0,0,.96);backdrop-filter:blur(18px);
+  display:flex;align-items:center;justify-content:center;padding:1rem}
+.init-box{width:100%;max-width:420px;
+  background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+  box-shadow:0 0 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04)}
+.init-header{padding:2rem 2rem 1.5rem;text-align:center;
+  background:linear-gradient(135deg,rgba(0,200,255,.06),transparent);
+  border-bottom:1px solid var(--border)}
+.init-logo{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.14em;
+  color:var(--accent);text-shadow:0 0 28px rgba(0,200,255,.4);margin-bottom:.2rem}
+.init-logo span{color:var(--text)}
+.init-sub{font-size:.72rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.init-body{padding:1.75rem 2rem 2rem}
+.init-role-toggle{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin-bottom:1.4rem;
+  background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.35rem}
+.init-role-btn{padding:.65rem;border:none;border-radius:6px;font-family:'Barlow Condensed',sans-serif;
+  font-size:.82rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+  background:transparent;color:var(--muted);transition:all .2s}
+.init-role-btn.active-admin{background:rgba(255,64,96,.15);color:var(--ban);border:1px solid rgba(255,64,96,.3)}
+.init-role-btn.active-participant{background:rgba(0,200,255,.12);color:var(--accent);border:1px solid rgba(0,200,255,.25)}
+.init-section{display:none}
+.init-section.visible{display:block}
+.init-field-lbl{font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:.45rem}
+.init-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:.72rem .95rem;font-family:'Barlow',sans-serif;font-size:.92rem;
+  border-radius:8px;outline:none;transition:border-color .2s,box-shadow .2s;margin-bottom:1rem}
+.init-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,200,255,.1)}
+.init-player-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.4rem;
+  max-height:200px;overflow-y:auto;margin-bottom:1rem;padding-right:2px}
+.init-player-grid::-webkit-scrollbar{width:3px}
+.init-player-grid::-webkit-scrollbar-thumb{background:var(--border)}
+.init-player-btn{background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+  padding:.6rem .5rem;font-family:'Barlow',sans-serif;font-size:.8rem;font-weight:700;
+  color:var(--text);cursor:pointer;transition:all .15s;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:.28rem}
+.init-player-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,200,255,.06)}
+.init-player-btn.selected{border-color:var(--accent);background:rgba(0,200,255,.1);color:var(--accent)}
+.init-player-btn .ipb-av{width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green-dark),rgba(0,230,118,.28));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:.82rem;color:#000;flex-shrink:0;overflow:hidden}
+.init-player-btn .ipb-av img{width:100%;height:100%;object-fit:cover}
+.init-player-btn .ipb-name{font-size:.75rem;font-weight:700;line-height:1.2}
+.init-error{font-size:.78rem;color:var(--ban);text-align:center;margin-bottom:.85rem;
+  min-height:1.1rem;letter-spacing:.04em}
+.init-btn{width:100%;padding:.72rem;border:none;border-radius:8px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.88rem;
+  letter-spacing:.14em;text-transform:uppercase;transition:all .2s}
+.init-btn-admin{background:var(--ban);color:#fff}
+.init-btn-admin:hover{background:#ff6080;box-shadow:0 0 18px rgba(255,64,96,.3)}
+.init-btn-participant{background:var(--accent);color:#000}
+.init-btn-participant:hover{background:#33d4ff;box-shadow:0 0 18px rgba(0,200,255,.3)}
+.init-no-participants{text-align:center;padding:1.5rem;color:var(--muted);font-size:.82rem;margin-bottom:.75rem}
 .pw-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;
   background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.6rem .95rem}
 .pw-item-name{font-weight:700;font-size:.88rem}
@@ -456,13 +488,13 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
 
 <!-- NAV TABS -->
 <div style="margin-top:58px">
-  <div class="nav-tabs">
-    <button class="nav-tab admin-tab-locked active" id="tab-admin" onclick="requireAdmin('admin',this)">⚙ Admin</button>
-    <button class="nav-tab admin-tab-locked" id="tab-passwords" onclick="requireAdmin('passwords',this)">🔑 Passwörter</button>
-    <button class="nav-tab" style="color:#a78bfa" onclick="showPage('securepick',this)">🔒 Secure Pick</button>
-    <button class="nav-tab" onclick="showPage('draft',this)">⚡ Draft</button>
-    <button class="nav-tab" onclick="showPage('results',this)">📋 Ergebnisse</button>
-    <button class="nav-tab" style="color:var(--gold)" onclick="showPage('final4',this)">🏆 Final 4</button>
+  <div class="nav-tabs" id="mainNavTabs">
+    <button class="nav-tab active" id="tab-admin" onclick="showPage('admin',this)">⚙ Admin</button>
+    <button class="nav-tab" id="tab-passwords" onclick="showPage('passwords',this)">🔑 Passwörter</button>
+    <button class="nav-tab" id="tab-securepick" style="color:#a78bfa" onclick="showPage('securepick',this)">🔒 Secure Pick</button>
+    <button class="nav-tab" id="tab-draft" onclick="showPage('draft',this)">⚡ Draft</button>
+    <button class="nav-tab" id="tab-results" onclick="showPage('results',this)">📋 Ergebnisse</button>
+    <button class="nav-tab" id="tab-final4" style="color:var(--gold)" onclick="showPage('final4',this)">🏆 Final 4</button>
   </div>
 </div>
 
@@ -818,22 +850,44 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
   </div>
 </div>
 
-<!-- ══════════ ADMIN LOCK OVERLAY ══════════ -->
-<div class="admin-lock-overlay" id="adminLockOverlay">
-  <div class="admin-lock-box">
-    <div class="admin-lock-header">
-      <div class="admin-lock-icon">🔐</div>
-      <div class="admin-lock-title">Admin-Bereich</div>
-      <div class="admin-lock-sub" id="adminLockSub">Admin-Einstellungen – nur für Admins zugänglich</div>
+<!-- ══════════ INITIAL LOGIN MODAL ══════════ -->
+<div class="init-overlay" id="initLoginOverlay">
+  <div class="init-box">
+    <div class="init-header">
+      <div class="init-logo">UFL <span>DRAFT</span></div>
+      <div class="init-sub">Anmeldung erforderlich</div>
     </div>
-    <div class="admin-lock-body">
-      <div class="admin-lock-label">Admin-Passwort</div>
-      <input type="password" class="admin-lock-input" id="adminLockInput" placeholder="••••••"
-        onkeydown="if(event.key==='Enter')checkAdminPw()">
-      <div class="admin-lock-error" id="adminLockError"></div>
-      <button class="admin-lock-btn" onclick="checkAdminPw()">🔓 Entsperren</button>
-      <div style="text-align:center;margin-top:.85rem">
-        <button onclick="closeAdminLock()" style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;font-family:'Barlow',sans-serif">Abbrechen</button>
+    <div class="init-body">
+      <!-- Role Toggle -->
+      <div class="init-role-toggle">
+        <button class="init-role-btn" id="roleAdminBtn" onclick="initSelectRole('admin')">🔴 Admin</button>
+        <button class="init-role-btn" id="roleParticipantBtn" onclick="initSelectRole('participant')">⚡ Teilnehmer</button>
+      </div>
+
+      <!-- Admin Section -->
+      <div class="init-section" id="initAdminSection">
+        <div class="init-field-lbl">Admin-Passwort</div>
+        <input type="password" class="init-input" id="initAdminPw" placeholder="••••••••" maxlength="20"
+          onkeydown="if(event.key==='Enter')initAttemptAdmin()">
+        <div class="init-error" id="initAdminError"></div>
+        <button class="init-btn init-btn-admin" onclick="initAttemptAdmin()">🔴 Als Admin anmelden</button>
+      </div>
+
+      <!-- Participant Section -->
+      <div class="init-section" id="initParticipantSection">
+        <div class="init-field-lbl">Wer bist du?</div>
+        <div class="init-player-grid" id="initPlayerGrid">
+          <div class="init-no-participants">Noch keine Teilnehmer eingetragen.</div>
+        </div>
+        <div class="init-field-lbl">Dein Passwort</div>
+        <input type="password" class="init-input" id="initParticipantPw" placeholder="••••" maxlength="8"
+          onkeydown="if(event.key==='Enter')initAttemptParticipant()">
+        <div class="init-error" id="initParticipantError"></div>
+        <button class="init-btn init-btn-participant" onclick="initAttemptParticipant()">⚡ Einloggen &amp; zum Draft</button>
+      </div>
+
+      <div style="text-align:center;margin-top:1.1rem" id="initRoleHint">
+        <span style="font-size:.7rem;color:var(--muted);letter-spacing:.08em">Wähle deine Rolle oben aus</span>
       </div>
     </div>
   </div>
@@ -842,69 +896,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════
-//  ADMIN PASSWORD SYSTEM
-// ══════════════════════════════════════
-// Admin-Passwort als SHA-256-Hash (damit kein Klartext im Quellcode steht)
-// SHA-256 von "ADMIN123" – zum Ändern: neuen Hash generieren und hier eintragen
-// Online-Tool: https://emn178.github.io/online-tools/sha256.html
-const ADMIN_PASSWORD_HASH = '5b40171489659251097e7790fc2f1892e2183a72546fe1df283d07865db9149c'; // = ADMIN123
-let adminUnlocked = false;
-let adminLockTarget = null; // {id, btn}
-
-function requireAdmin(pageId, btn) {
-  if (adminUnlocked) {
-    showPage(pageId, btn);
-    return;
-  }
-  adminLockTarget = { id: pageId, btn: btn };
-  document.getElementById('adminLockSub').textContent =
-    pageId === 'passwords'
-      ? 'Passwörter-Verwaltung – nur für Admins'
-      : 'Admin-Einstellungen – nur für Admins';
-  document.getElementById('adminLockInput').value = '';
-  document.getElementById('adminLockError').textContent = '';
-  document.getElementById('adminLockOverlay').classList.add('open');
-  setTimeout(function() { document.getElementById('adminLockInput').focus(); }, 120);
-}
-
-async function checkAdminPw() {
-  var pw = document.getElementById('adminLockInput').value.trim().toUpperCase();
-  var err = document.getElementById('adminLockError');
-  if (!pw) { err.textContent = 'Bitte Passwort eingeben.'; return; }
-  var h = await sha256(pw);
-  if (h !== ADMIN_PASSWORD_HASH) {
-    err.textContent = 'Falsches Passwort.';
-    document.getElementById('adminLockInput').value = '';
-    document.getElementById('adminLockInput').focus();
-    return;
-  }
-  adminUnlocked = true;
-  document.getElementById('adminLockOverlay').classList.remove('open');
-  document.querySelectorAll('.admin-tab-locked').forEach(function(t) {
-    t.classList.remove('admin-tab-locked');
-  });
-  if (adminLockTarget) {
-    showPage(adminLockTarget.id, adminLockTarget.btn);
-    adminLockTarget = null;
-  }
-  showToast('Admin-Modus aktiviert ✓', 'pick');
-}
-
-function closeAdminLock() {
-  document.getElementById('adminLockOverlay').classList.remove('open');
-  adminLockTarget = null;
-}
-
-// Lock admin again (e.g. after inactivity) – optional, kann per Button aufgerufen werden
-function lockAdmin() {
-  adminUnlocked = false;
-  document.querySelectorAll('#tab-admin,#tab-passwords').forEach(function(t) {
-    t.classList.add('admin-tab-locked');
-  });
-  showToast('Admin gesperrt', '');
-}
-
 // ══════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════
@@ -918,16 +909,8 @@ let posFilter = 'ALL';
 let loggedInIdx = null;  // welcher Spieler gerade eingeloggt ist
 
 // ══════════════════════════════════════
-//  PASSWORT GENERATOR + HASHING (SHA-256)
+//  PASSWORT GENERATOR
 // ══════════════════════════════════════
-// Klartextpasswörter werden NIEMALS im state gespeichert.
-// Nur SHA-256-Hashes. Der Klartext lebt nur kurz im RAM beim Generieren.
-
-async function sha256(text) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
 function genPassword(){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let pw = '';
@@ -935,27 +918,14 @@ function genPassword(){
   return pw;
 }
 
-// plainPasswords: temporärer Speicher NUR für die Anzeige im Admin-Passwörter-Tab.
-// Wird beim Verlassen des Tabs geleert. Nie im state gespeichert.
-let plainPasswords = {}; // { participantIndex: 'XKBQ' }
-
-async function generateAllPasswords(){
-  plainPasswords = {};
-  for(let i=0;i<state.participants.length;i++){
-    const pw = genPassword();
-    plainPasswords[i] = pw;
-    state.participants[i].passwordHash = await sha256(pw);
-    delete state.participants[i].password; // sicherheitshalber
-  }
+function generateAllPasswords(){
+  state.participants.forEach(p => { p.password = genPassword(); });
   renderPwList();
   showToast('Passwörter generiert ✓','pick');
 }
 
-async function regenPassword(i){
-  const pw = genPassword();
-  plainPasswords[i] = pw;
-  state.participants[i].passwordHash = await sha256(pw);
-  delete state.participants[i].password;
+function regenPassword(i){
+  state.participants[i].password = genPassword();
   renderPwList();
   showToast('Passwort neu generiert','pick');
 }
@@ -966,43 +936,25 @@ function renderPwList(){
     el.innerHTML = '<div class="empty-state">Erst Teilnehmer im Admin-Tab hinzufügen.</div>';
     return;
   }
-  el.innerHTML = state.participants.map((p,i) => {
-    const plain = plainPasswords[i];
-    const codeHtml = plain
-      ? `<div class="pw-item-code">${plain}</div>`
-      : `<div class="pw-item-code" style="font-size:.75rem;letter-spacing:.05em;color:var(--muted)">neu generieren</div>`;
-    return `<div class="pw-item">
+  el.innerHTML = state.participants.map((p,i) => `
+    <div class="pw-item">
       <div>
         <div class="pw-item-name">${p.name}</div>
-        <div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">${p.passwordHash ? '🔒 Hash gespeichert' : '⚠ Kein Passwort'}</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">Passwort für den Draft</div>
       </div>
       <div style="display:flex;align-items:center;gap:.5rem">
-        ${codeHtml}
+        <div class="pw-item-code">${p.password||'—'}</div>
         <button class="pw-regenerate-btn" onclick="regenPassword(${i})" title="Neu generieren">🎲</button>
       </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 }
 
 function copyAllPasswords(){
   if(!state.participants.length){ showToast('Keine Spieler vorhanden','ban'); return; }
-  const lines = state.participants.map(function(p,i){
-    const plain = plainPasswords[i];
-    return p.name + ': ' + (plain || '(nicht verfügbar – neu generieren)');
-  });
+  const lines = state.participants.map(function(p){ return p.name + ': ' + (p.password || '?'); });
   navigator.clipboard.writeText(lines.join(String.fromCharCode(10)))
-    .then(function(){ showToast('Passwörter kopiert', 'pick'); })
+    .then(function(){ showToast('Passwoerter kopiert', 'pick'); })
     .catch(function(){ showToast('Kopieren fehlgeschlagen', 'ban'); });
-}
-
-// Klartexte beim Seitenwechsel weg vom Passwörter-Tab löschen
-function clearPlainPasswords(){
-  plainPasswords = {};
-}
-
-async function checkPasswordHash(input, hash){
-  const h = await sha256(input.trim().toUpperCase());
-  return h === hash;
 }
 
 // ══════════════════════════════════════
@@ -1015,20 +967,16 @@ function loadLigaPlayers(){
   } catch(e){ return []; }
 }
 
-async function importLigaParticipants(){
+function importLigaParticipants(){
   const ligaPlayers = loadLigaPlayers();
   if(!ligaPlayers.length){ showToast('Keine Liga-Spieler gefunden','ban'); return; }
   let added = 0;
-  for(const p of ligaPlayers){
-    if(state.participants.length >= 10) break;
-    if(state.participants.find(x => x.name.toLowerCase() === p.name.toLowerCase())) continue;
-    const pw = genPassword();
-    const hash = await sha256(pw);
-    const idx = state.participants.length;
-    state.participants.push({ name: p.name, passwordHash: hash });
-    plainPasswords[idx] = pw;
+  ligaPlayers.forEach(p => {
+    if(state.participants.length >= 10) return;
+    if(state.participants.find(x => x.name.toLowerCase() === p.name.toLowerCase())) return;
+    state.participants.push({ name: p.name, password: genPassword() });
     added++;
-  }
+  });
   renderParticipantAdmin();
   checkReady();
   showToast(`${added} Liga-Spieler geladen ✓`, 'pick');
@@ -1050,11 +998,6 @@ function updateLigaImportBanner(){
 //  NAVIGATION
 // ══════════════════════════════════════
 function showPage(id, btn){
-  // Klartextpasswörter löschen wenn Passwörter-Tab verlassen wird
-  const currentActive = document.querySelector('.page.active');
-  if(currentActive && currentActive.id === 'page-passwords' && id !== 'passwords'){
-    clearPlainPasswords();
-  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
@@ -1076,7 +1019,7 @@ function saveMatchday(){
   checkReady();
 }
 
-async function addParticipant(){
+function addParticipant(){
   const input = document.getElementById('participantInput');
   const name = input.value.trim();
   if(!name) return;
@@ -1084,11 +1027,7 @@ async function addParticipant(){
   if(state.participants.find(p => p.name.toLowerCase() === name.toLowerCase())){
     showToast('Name bereits vorhanden','ban'); return;
   }
-  const pw = genPassword();
-  const hash = await sha256(pw);
-  const idx = state.participants.length;
-  state.participants.push({ name, passwordHash: hash });
-  plainPasswords[idx] = pw;
+  state.participants.push({ name, password: genPassword() });
   input.value = '';
   renderParticipantAdmin();
   renderPwList();
@@ -1208,7 +1147,7 @@ function checkReady(){
 // ══════════════════════════════════════
 //  DRAFT LOGIC
 // ══════════════════════════════════════
-async function startDraft(){
+function startDraft(){
   // Konflikte in Secure Picks prüfen
   var pickCounts = {};
   Object.values(securePicks).forEach(function(n){ if(n) pickCounts[n]=(pickCounts[n]||0)+1; });
@@ -1219,21 +1158,13 @@ async function startDraft(){
     showPage('securepick', spTabs[2]);
     return;
   }
-  // Stelle sicher alle Spieler einen Hash haben
-  for(let i=0;i<state.participants.length;i++){
-    const p = state.participants[i];
-    if(!p.passwordHash){
-      const pw = genPassword();
-      plainPasswords[i] = pw;
-      p.passwordHash = await sha256(pw);
-    }
-    delete p.password; // alten Klartext weg
-  }
+  // Stelle sicher alle Spieler ein Passwort haben
+  state.participants.forEach(p => { if(!p.password) p.password = genPassword(); });
   state.draft = { phase:'ban', step:0, bans:{}, picks:{}, history:[] };
   loggedInIdx = null;
   document.getElementById('seasonLabel').textContent = state.matchday;
   const tabs = document.querySelectorAll('.nav-tab');
-  showPage('draft', tabs[3]);
+  showPage('draft', tabs[2]);
   renderDraft();
   showLoginOverlay();
 }
@@ -1302,7 +1233,7 @@ function selectLoginPlayer(i, el){
   document.getElementById('loginPwInput').focus();
 }
 
-async function attemptNormalLogin(){
+function attemptNormalLogin(){
   const pw = document.getElementById('loginPwInput').value.trim().toUpperCase();
   const errEl = document.getElementById('loginError');
 
@@ -1317,8 +1248,7 @@ async function attemptNormalLogin(){
   if(selectedLoginIdx !== participantIdx){
     errEl.textContent = 'Du bist nicht dran. Warten auf: ' + state.participants[participantIdx].name; return;
   }
-  const ok = await checkPasswordHash(pw, p.passwordHash);
-  if(!ok){
+  if(pw !== p.password){
     errEl.textContent = 'Falsches Passwort. Versuche es erneut.';
     document.getElementById('loginPwInput').value = '';
     document.getElementById('loginPwInput').focus();
@@ -1330,8 +1260,6 @@ async function attemptNormalLogin(){
   document.getElementById('loginOverlay').classList.remove('open');
   showToast(p.name + ' eingeloggt – du bist dran!', 'pick');
 }
-
-function attemptLogin(){ attemptNormalLogin(); }
 
 function checkLoginRequired(){
   const { phase } = currentTurn();
@@ -1671,14 +1599,13 @@ function spSelectPlayer(i, el) {
   document.getElementById('spPwError').textContent = '';
 }
 
-async function spCheckPw() {
+function spCheckPw() {
   var pw = document.getElementById('spPwInput').value.trim().toUpperCase();
   var err = document.getElementById('spPwError');
   if (spSelectedIdx === null) { err.textContent = 'Bitte zuerst deinen Namen wählen.'; return; }
   if (!pw) { err.textContent = 'Passwort eingeben.'; return; }
   var p = state.participants[spSelectedIdx];
-  var ok = await checkPasswordHash(pw, p.passwordHash);
-  if (!ok) {
+  if (pw !== p.password) {
     err.textContent = 'Falsches Passwort.';
     document.getElementById('spPwInput').value = '';
     document.getElementById('spPwInput').focus();
@@ -1712,7 +1639,7 @@ function spSearchPlayers(query) {
   if (!matches.length) { results.style.display = 'none'; return; }
   results.style.display = 'block';
   results.innerHTML = matches.map(function(p) {
-    return '<div onmousedown="event.preventDefault();spSelectFromSearch(\'' + p.name.replace(/'/g,"&#39;") + '\')" '
+    return '<div onclick="spSelectFromSearch(\'' + p.name.replace(/'/g,"&#39;") + '\')" '
       + 'style="padding:.55rem .85rem;cursor:pointer;font-size:.88rem;border-bottom:1px solid var(--border);'
       + 'display:flex;justify-content:space-between;align-items:center;transition:background .15s"'
       + ' onmouseover="this.style.background=\'rgba(167,139,250,.08)\'" onmouseout="this.style.background=\'\'">'
@@ -1737,29 +1664,16 @@ function spConfirmPick() {
 
   if (!playerName) { err.textContent = 'Bitte einen Spieler auswählen.'; return; }
 
-  // Exakter Match (case-insensitive)
+  // Check player exists in pool
   var found = state.pool.find(function(p) { return p.name.toLowerCase() === playerName.toLowerCase(); });
+  if (!found) { err.textContent = 'Spieler nicht im Pool gefunden. Bitte aus der Liste wählen.'; return; }
 
-  // Kein exakter Match → partielle Suche (enthält den eingetippten Text)
-  if (!found) {
-    var q = playerName.toLowerCase();
-    var matches = state.pool.filter(function(p) { return p.name.toLowerCase().indexOf(q) !== -1; });
-    if (matches.length === 1) {
-      found = matches[0];
-    } else if (matches.length > 1) {
-      err.textContent = 'Mehrere Spieler gefunden – bitte aus der Liste wählen.'; return;
-    } else {
-      err.textContent = 'Spieler nicht im Pool gefunden.'; return;
-    }
-  }
-
-  var savedIdx = spLoggedInIdx;
   securePicks[spLoggedInIdx] = found.name;
   document.getElementById('spOverlay').classList.remove('open');
   spLoggedInIdx = null;
   spSelectedPlayer = null;
   renderSecurePick();
-  showToast(state.participants[savedIdx].name + ' hat gesichert: ' + found.name, 'pick');
+  showToast(state.participants[spLoggedInIdx !== null ? spLoggedInIdx : Object.keys(securePicks).length - 1].name + ' hat gesichert: ' + found.name, 'pick');
 }
 
 // Close overlay on outside click
@@ -1808,15 +1722,119 @@ function avatarHTML(player, initials, size) {
     : initials;
 }
 // ══════════════════════════════════════
+//  INITIAL LOGIN MODAL
+// ══════════════════════════════════════
+const ADMIN_PASSWORD = 'ADMIN123'; // Admin-Passwort – hier ändern!
+
+let currentRole = null;
+let initSelectedParticipantIdx = null;
+
+function initSelectRole(role) {
+  currentRole = role;
+  document.getElementById('initAdminSection').classList.toggle('visible', role === 'admin');
+  document.getElementById('initParticipantSection').classList.toggle('visible', role === 'participant');
+  document.getElementById('initAdminError').textContent = '';
+  document.getElementById('initParticipantError').textContent = '';
+  document.getElementById('roleAdminBtn').className = 'init-role-btn' + (role === 'admin' ? ' active-admin' : '');
+  document.getElementById('roleParticipantBtn').className = 'init-role-btn' + (role === 'participant' ? ' active-participant' : '');
+  document.getElementById('initRoleHint').style.display = 'none';
+  if (role === 'participant') {
+    renderInitPlayerGrid();
+    setTimeout(function(){ document.getElementById('initParticipantPw').focus(); }, 100);
+  } else {
+    setTimeout(function(){ document.getElementById('initAdminPw').focus(); }, 100);
+  }
+}
+
+function renderInitPlayerGrid() {
+  var grid = document.getElementById('initPlayerGrid');
+  if (!state.participants.length) {
+    grid.innerHTML = '<div class="init-no-participants">Noch keine Teilnehmer.<br>Bitte zuerst den Admin fragen.</div>';
+    return;
+  }
+  initSelectedParticipantIdx = null;
+  grid.innerHTML = state.participants.map(function(p, i) {
+    var init = p.name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+    var src = getAvatar(p);
+    var avContent = src ? '<img src="' + src + '" alt="">' : init;
+    return '<button class="init-player-btn" id="initPBtn' + i + '" onclick="initSelectPlayer(' + i + ',this)">'
+      + '<div class="ipb-av">' + avContent + '</div>'
+      + '<div class="ipb-name">' + p.name + '</div>'
+      + '</button>';
+  }).join('');
+}
+
+function initSelectPlayer(i, el) {
+  initSelectedParticipantIdx = i;
+  document.querySelectorAll('.init-player-btn').forEach(function(b){ b.classList.remove('selected'); });
+  el.classList.add('selected');
+  document.getElementById('initParticipantError').textContent = '';
+  document.getElementById('initParticipantPw').focus();
+}
+
+function initAttemptAdmin() {
+  var pw = document.getElementById('initAdminPw').value.trim();
+  var err = document.getElementById('initAdminError');
+  if (!pw) { err.textContent = 'Bitte Passwort eingeben.'; return; }
+  if (pw !== ADMIN_PASSWORD) {
+    err.textContent = 'Falsches Admin-Passwort.';
+    document.getElementById('initAdminPw').value = '';
+    document.getElementById('initAdminPw').focus();
+    return;
+  }
+  // Admin: show all tabs
+  closeInitLogin('admin');
+}
+
+function initAttemptParticipant() {
+  var err = document.getElementById('initParticipantError');
+  if (initSelectedParticipantIdx === null) { err.textContent = 'Bitte zuerst deinen Namen wählen.'; return; }
+  var pw = document.getElementById('initParticipantPw').value.trim().toUpperCase();
+  if (!pw) { err.textContent = 'Passwort eingeben.'; return; }
+  var p = state.participants[initSelectedParticipantIdx];
+  if (pw !== p.password) {
+    err.textContent = 'Falsches Passwort.';
+    document.getElementById('initParticipantPw').value = '';
+    document.getElementById('initParticipantPw').focus();
+    return;
+  }
+  // Participant: hide admin tabs, go to draft
+  closeInitLogin('participant', initSelectedParticipantIdx);
+}
+
+function closeInitLogin(role, participantIdx) {
+  document.getElementById('initLoginOverlay').style.display = 'none';
+  // Admin-only tabs
+  var adminOnlyTabs = ['tab-admin','tab-passwords'];
+  if (role === 'participant') {
+    adminOnlyTabs.forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    // Pre-set loggedInIdx so participant can act immediately
+    if (participantIdx !== undefined) loggedInIdx = participantIdx;
+    // Go to draft page
+    var draftTab = document.getElementById('tab-draft');
+    showPage('draft', draftTab);
+    showToast('Willkommen, ' + state.participants[participantIdx].name + '!', 'pick');
+  } else {
+    // Admin: make sure all tabs visible
+    adminOnlyTabs.forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.style.display = '';
+    });
+    showToast('Admin eingeloggt ✓', 'pick');
+  }
+}
+
+// ══════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════
 updateLigaImportBanner();
 checkReady();
-// Show admin lock on initial load
-(function() {
-  var adminBtn = document.getElementById('tab-admin');
-  requireAdmin('admin', adminBtn);
-})();
+
+// Show initial login modal on page load
+document.getElementById('initLoginOverlay').style.display = 'flex';
 </script>
 <script src="players.js"></script>
 </body>
