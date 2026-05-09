@@ -263,6 +263,50 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
 
 .empty-state{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.88rem}
 
+
+/* ══════════ SECURE PICK CSS ══════════ */
+:root { --purple:#a78bfa; --purple-dark:#7c3aed; }
+.sp-page-wrap{max-width:900px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,4vw,2rem)}
+.sp-banner{background:linear-gradient(135deg,rgba(167,139,250,.1),rgba(167,139,250,.03));
+  border:1px solid rgba(167,139,250,.28);border-radius:12px;padding:1.1rem 1.4rem;
+  margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem}
+.sp-banner h3{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.08em;color:var(--purple)}
+.sp-banner p{font-size:.82rem;color:var(--muted);margin-top:.2rem;max-width:500px;line-height:1.5}
+.sp-status-badge{border-radius:8px;padding:.45rem .9rem;font-size:.72rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;text-align:center}
+.sp-status-badge.pending{background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);color:var(--purple)}
+.sp-status-badge.conflict{background:rgba(244,67,54,.12);border:1px solid rgba(244,67,54,.3);color:var(--red)}
+.sp-status-badge.ready{background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.3);color:var(--pick)}
+
+.sp-list{display:flex;flex-direction:column;gap:.55rem}
+.sp-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:.85rem 1.1rem;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1rem}
+.sp-item.conflict-row{border-color:rgba(244,67,54,.4);background:rgba(244,67,54,.04)}
+.sp-item.ok-row{border-color:rgba(0,229,160,.3)}
+.sp-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--purple-dark),rgba(167,139,250,.3));
+  display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;
+  font-size:.95rem;color:#fff;flex-shrink:0;overflow:hidden}
+.sp-av img{width:100%;height:100%;object-fit:cover}
+.sp-player-name{font-weight:700;font-size:.92rem}
+.sp-pick-val{font-size:.82rem;color:var(--muted);margin-top:.2rem}
+.sp-pick-val.set{color:var(--purple);font-weight:600}
+.sp-pick-val.conflict{color:var(--red);font-weight:600}
+.sp-pick-val.ok{color:var(--pick);font-weight:600}
+.sp-action{display:flex;align-items:center;gap:.5rem}
+.btn-purple{background:var(--purple);color:#fff;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:.42rem .9rem;border:none;border-radius:6px;cursor:pointer;transition:background .2s}
+.btn-purple:hover{background:var(--purple-dark)}
+
+/* Secure pick locked in pool */
+.ppool-card.secured{border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.06);cursor:not-allowed;opacity:.55}
+.ppool-card.secured::after{content:'GESICHERT';position:absolute;inset:0;display:flex;
+  align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;
+  font-size:.7rem;letter-spacing:.1em;color:var(--purple);background:rgba(8,11,14,.72)}
+.sp-legend{display:flex;gap:.85rem;flex-wrap:wrap;margin-bottom:1rem}
+.sp-legend-item{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--muted)}
+.sp-legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
 /* ══════════ FINAL 4 CSS ══════════ */
 .f4-setup-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.65rem;margin-bottom:1rem}
 .f4-player-select{background:var(--surface2);border:2px solid var(--border);border-radius:8px;
@@ -390,6 +434,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('admin',this)">⚙ Admin</button>
     <button class="nav-tab" onclick="showPage('passwords',this)">🔑 Passwörter</button>
+    <button class="nav-tab" style="color:#a78bfa" onclick="showPage('securepick',this)">🔒 Secure Pick</button>
     <button class="nav-tab" onclick="showPage('draft',this)">⚡ Draft</button>
     <button class="nav-tab" onclick="showPage('results',this)">📋 Ergebnisse</button>
     <button class="nav-tab" style="color:var(--gold)" onclick="showPage('final4',this)">🏆 Final 4</button>
@@ -573,6 +618,80 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
 </div>
 
 
+
+
+<!-- ══════════ SECURE PICK PAGE ══════════ -->
+<div class="page" id="page-securepick">
+<div class="sp-page-wrap">
+
+  <div class="sp-banner">
+    <div>
+      <h3>🔒 Secure Pick</h3>
+      <p>Jeder Teilnehmer trägt vor dem Draft einen Spieler ein, den er sichern möchte.
+         Konflikte werden aufgelöst bevor der Draft startet.
+         Gesicherte Spieler können in der Ban-Phase nicht gebannt werden.</p>
+    </div>
+    <div class="sp-status-badge pending" id="spStatusBadge">Warten auf Eingaben</div>
+  </div>
+
+  <div class="sp-legend">
+    <div class="sp-legend-item"><div class="sp-legend-dot" style="background:var(--purple)"></div>Noch nicht eingetragen</div>
+    <div class="sp-legend-item"><div class="sp-legend-dot" style="background:var(--red)"></div>Konflikt – gleicher Spieler</div>
+    <div class="sp-legend-item"><div class="sp-legend-dot" style="background:var(--pick)"></div>Gesichert ✓</div>
+  </div>
+
+  <div class="sp-list" id="spList"></div>
+
+  <div style="margin-top:1.25rem;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-purple" onclick="openSpLogin()">🔒 Secure Pick eintragen</button>
+    <button class="btn btn-ghost btn-sm" onclick="clearAllSecurePicks()">✕ Alle zurücksetzen</button>
+    <span id="spReadyInfo" style="font-size:.8rem;color:var(--muted)"></span>
+  </div>
+
+</div>
+</div>
+
+<!-- Secure Pick Login/Eingabe Overlay -->
+<div class="modal-overlay" id="spOverlay" style="z-index:350">
+  <div class="modal" style="max-width:460px">
+    <div style="padding:1.25rem 1.5rem;background:rgba(167,139,250,.07);border-bottom:1px solid var(--border);text-align:center">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.1em;color:var(--purple)">🔒 Secure Pick</div>
+      <div style="font-size:.78rem;color:var(--muted);margin-top:.25rem" id="spOverlayHint">Wähle deinen Namen und trag deinen Wunsch-Pick ein</div>
+    </div>
+    <div style="padding:1.35rem">
+      <!-- Step 1: Spieler wählen -->
+      <div id="spStep1">
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.55rem">Wer bist du?</div>
+        <div class="login-select-grid" id="spPlayerGrid"></div>
+        <div style="height:1px;background:var(--border);margin:.85rem 0"></div>
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem">Passwort</div>
+        <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+          <input type="password" id="spPwInput" placeholder="••••" maxlength="8"
+            style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.65rem .85rem;border-radius:7px;font-family:Barlow,sans-serif;font-size:1rem;text-align:center;letter-spacing:.2em;outline:none"
+            onkeydown="if(event.key==='Enter')spCheckPw()">
+        </div>
+        <div class="login-error" id="spPwError"></div>
+        <button class="btn btn-purple" style="width:100%" onclick="spCheckPw()">Weiter →</button>
+      </div>
+      <!-- Step 2: Spieler eingeben -->
+      <div id="spStep2" style="display:none">
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.55rem">Dein Secure Pick</div>
+        <div style="position:relative;margin-bottom:.65rem">
+          <input type="text" id="spPickInput" placeholder="Spielername eingeben..."
+            style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.65rem .85rem;border-radius:7px;font-family:Barlow,sans-serif;font-size:.9rem;outline:none"
+            oninput="spSearchPlayers(this.value)" onkeydown="if(event.key==='Enter')spConfirmPick()">
+          <div id="spSearchResults" style="position:absolute;left:0;right:0;top:100%;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:10;display:none"></div>
+        </div>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:.85rem" id="spSelectedInfo">Noch kein Spieler ausgewählt</div>
+        <div class="login-error" id="spPickError"></div>
+        <div style="display:flex;gap:.65rem">
+          <button class="btn btn-ghost btn-sm" onclick="spBack()">← Zurück</button>
+          <button class="btn btn-purple" style="flex:1" onclick="spConfirmPick()">🔒 Sichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════ FINAL 4 PAGE ══════════ -->
 <div class="page" id="page-final4">
@@ -787,6 +906,7 @@ function showPage(id, btn){
   if(id === 'draft')     { renderDraft(); checkLoginRequired(); }
   if(id === 'passwords') renderPwList();
   if(id === 'final4')    renderF4Setup();
+  if(id === 'securepick') renderSecurePick();
 }
 
 // ══════════════════════════════════════
@@ -928,6 +1048,16 @@ function checkReady(){
 //  DRAFT LOGIC
 // ══════════════════════════════════════
 function startDraft(){
+  // Konflikte in Secure Picks prüfen
+  var pickCounts = {};
+  Object.values(securePicks).forEach(function(n){ if(n) pickCounts[n]=(pickCounts[n]||0)+1; });
+  var hasConflict = Object.values(pickCounts).some(function(c){ return c>1; });
+  if(hasConflict){
+    showToast('Secure Pick Konflikte zuerst lösen!','ban');
+    var spTabs = document.querySelectorAll('.nav-tab');
+    showPage('securepick', spTabs[2]);
+    return;
+  }
   // Stelle sicher alle Spieler ein Passwort haben
   state.participants.forEach(p => { if(!p.password) p.password = genPassword(); });
   state.draft = { phase:'ban', step:0, bans:{}, picks:{}, history:[] };
@@ -1039,8 +1169,14 @@ function checkLoginRequired(){
 
 function handlePlayerClick(playerNameOrEl){
   const playerName = (typeof playerNameOrEl === 'string') ? playerNameOrEl : playerNameOrEl.dataset.name;
+  // Secure Picks können nicht gebannt werden
   const { phase, participantIdx } = currentTurn();
   if(phase === 'done') return;
+  // Secure Picks können nicht gebannt werden
+  if(phase === 'ban' && isSecured(playerName)){
+    showToast('Dieser Spieler ist gesichert und kann nicht gebannt werden!', 'ban');
+    return;
+  }
 
   // Login-Check: ist der richtige Spieler eingeloggt?
   if(loggedInIdx !== participantIdx){
@@ -1214,8 +1350,10 @@ function renderPool(){
     const av = p.img
       ? '<img src="' + p.img + '" style="width:100%;height:100%;object-fit:cover" alt="">'
       : init;
-    const cls = 'ppool-card' + (isBanned?' banned':'') + (isPicked?' picked':'');
-    const clickAttr = canClick
+    const secured = phase === 'ban' && isSecured(p.name);
+    const cls = 'ppool-card' + (isBanned?' banned':'') + (isPicked?' picked':'') + (secured?' secured':'');
+    const canClickFinal = canClick && !secured;
+    const clickAttr = canClickFinal
       ? ' onclick="handlePlayerClick(this.dataset.name)" data-name="' + p.name.replace(/"/g,'&quot;') + '"'
       : '';
     return '<div class="' + cls + '"' + clickAttr + '>'
@@ -1227,6 +1365,234 @@ function renderPool(){
   }).join('');
 }
 
+
+
+
+// ══════════════════════════════════════
+//  SECURE PICK SYSTEM
+// ══════════════════════════════════════
+var securePicks = {};      // { participantIdx: playerName }
+var spLoggedInIdx = null;
+var spSelectedPlayer = null;
+
+function renderSecurePick() {
+  var list = document.getElementById('spList');
+  var badge = document.getElementById('spStatusBadge');
+  var readyInfo = document.getElementById('spReadyInfo');
+  if (!list) return;
+
+  // Konflikte ermitteln
+  var pickCounts = {};
+  Object.values(securePicks).forEach(function(name) {
+    if (name) pickCounts[name] = (pickCounts[name] || 0) + 1;
+  });
+  var hasConflict = Object.values(pickCounts).some(function(c) { return c > 1; });
+  var totalSet = Object.keys(securePicks).length;
+  var allSet = state.participants.length > 0 && totalSet === state.participants.length;
+
+  // Badge
+  if (!allSet) {
+    badge.className = 'sp-status-badge pending';
+    badge.textContent = totalSet + ' / ' + state.participants.length + ' eingetragen';
+  } else if (hasConflict) {
+    badge.className = 'sp-status-badge conflict';
+    badge.textContent = 'Konflikt – bitte lösen!';
+  } else {
+    badge.className = 'sp-status-badge ready';
+    badge.textContent = 'Alle gesichert ✓';
+  }
+
+  if (readyInfo) {
+    if (!allSet) readyInfo.textContent = (state.participants.length - totalSet) + ' Teilnehmer müssen noch ihren Pick eintragen.';
+    else if (hasConflict) readyInfo.textContent = 'Konflikte müssen aufgelöst werden bevor der Draft startet.';
+    else readyInfo.textContent = 'Bereit! Der Draft kann starten.';
+  }
+
+  if (!state.participants.length) {
+    list.innerHTML = '<div class="empty-state">Erst Teilnehmer im Admin-Tab hinzufügen.</div>';
+    return;
+  }
+
+  list.innerHTML = state.participants.map(function(p, i) {
+    var pick = securePicks[i];
+    var isConflict = pick && pickCounts[pick] > 1;
+    var isOk = pick && !isConflict;
+    var rowClass = isConflict ? 'conflict-row' : isOk ? 'ok-row' : '';
+    var pickLabel = pick
+      ? (isConflict
+          ? '<span class="sp-pick-val conflict">⚠ ' + pick + ' (Konflikt!)</span>'
+          : '<span class="sp-pick-val ok">✓ ' + pick + '</span>')
+      : '<span class="sp-pick-val">Noch nicht eingetragen</span>';
+
+    var init = p.name.split(' ').map(function(w) { return w[0]; }).join('').slice(0, 2).toUpperCase();
+    var av = avatarHTML({name: p.name, avatar: (loadLigaPlayers().find(function(x){return x.name===p.name;})||{}).avatar}, init);
+
+    return '<div class="sp-item ' + rowClass + '">'
+      + '<div class="sp-av">' + av + '</div>'
+      + '<div>'
+        + '<div class="sp-player-name">' + p.name + '</div>'
+        + pickLabel
+      + '</div>'
+      + '<div class="sp-action">'
+        + (pick ? '<button class="btn btn-ghost btn-sm" onclick="clearSecurePick(' + i + ')">✕</button>' : '')
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+function clearSecurePick(idx) {
+  delete securePicks[idx];
+  renderSecurePick();
+}
+
+function clearAllSecurePicks() {
+  if (!confirm('Alle Secure Picks zurücksetzen?')) return;
+  securePicks = {};
+  renderSecurePick();
+}
+
+// ── Login Flow ──
+var spSelectedIdx = null;
+
+function openSpLogin() {
+  if (!state.participants.length) { showToast('Erst Teilnehmer hinzufügen', 'ban'); return; }
+  spSelectedIdx = null;
+  spSelectedPlayer = null;
+  document.getElementById('spStep1').style.display = 'block';
+  document.getElementById('spStep2').style.display = 'none';
+  document.getElementById('spPwInput').value = '';
+  document.getElementById('spPwError').textContent = '';
+  document.getElementById('spPickInput').value = '';
+  document.getElementById('spSelectedInfo').textContent = 'Noch kein Spieler ausgewählt';
+  renderSpPlayerGrid();
+  document.getElementById('spOverlay').classList.add('open');
+  setTimeout(function() { document.getElementById('spPwInput').focus(); }, 100);
+}
+
+function renderSpPlayerGrid() {
+  var grid = document.getElementById('spPlayerGrid');
+  var pickCounts = {};
+  Object.values(securePicks).forEach(function(n) { if(n) pickCounts[n] = (pickCounts[n]||0)+1; });
+
+  grid.innerHTML = state.participants.map(function(p, i) {
+    var hasPick = securePicks[i] !== undefined;
+    var pickConflict = hasPick && pickCounts[securePicks[i]] > 1;
+    var init = p.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+    var av = avatarHTML({name: p.name}, init);
+    var statusLabel = hasPick
+      ? (pickConflict
+          ? '<div style="font-size:.6rem;color:var(--red)">⚠ Konflikt</div>'
+          : '<div style="font-size:.6rem;color:var(--pick)">✓ Gesichert</div>')
+      : '';
+    return '<div class="login-player-btn" onclick="spSelectPlayer(' + i + ',this)">'
+      + '<div class="lp-init">' + av + '</div>'
+      + '<div class="lp-name">' + p.name + '</div>'
+      + statusLabel
+    + '</div>';
+  }).join('');
+}
+
+function spSelectPlayer(i, el) {
+  spSelectedIdx = i;
+  document.querySelectorAll('#spPlayerGrid .login-player-btn').forEach(function(b) { b.classList.remove('selected'); });
+  el.classList.add('selected');
+  document.getElementById('spPwError').textContent = '';
+}
+
+function spCheckPw() {
+  var pw = document.getElementById('spPwInput').value.trim().toUpperCase();
+  var err = document.getElementById('spPwError');
+  if (spSelectedIdx === null) { err.textContent = 'Bitte zuerst deinen Namen wählen.'; return; }
+  if (!pw) { err.textContent = 'Passwort eingeben.'; return; }
+  var p = state.participants[spSelectedIdx];
+  if (pw !== p.password) {
+    err.textContent = 'Falsches Passwort.';
+    document.getElementById('spPwInput').value = '';
+    document.getElementById('spPwInput').focus();
+    return;
+  }
+  spLoggedInIdx = spSelectedIdx;
+  // Show step 2
+  document.getElementById('spStep1').style.display = 'none';
+  document.getElementById('spStep2').style.display = 'block';
+  document.getElementById('spOverlayHint').textContent = p.name + ' – trag deinen Wunsch-Pick ein';
+  // Pre-fill if already has pick
+  if (securePicks[spLoggedInIdx]) {
+    document.getElementById('spPickInput').value = securePicks[spLoggedInIdx];
+    spSelectedPlayer = securePicks[spLoggedInIdx];
+    document.getElementById('spSelectedInfo').textContent = '✓ Aktuell: ' + spSelectedPlayer;
+  }
+  setTimeout(function() { document.getElementById('spPickInput').focus(); }, 100);
+}
+
+function spBack() {
+  document.getElementById('spStep1').style.display = 'block';
+  document.getElementById('spStep2').style.display = 'none';
+  spSelectedPlayer = null;
+}
+
+function spSearchPlayers(query) {
+  var results = document.getElementById('spSearchResults');
+  if (!query || query.length < 2) { results.style.display = 'none'; return; }
+  var q = query.toLowerCase();
+  var matches = state.pool.filter(function(p) { return p.name.toLowerCase().indexOf(q) !== -1; }).slice(0, 8);
+  if (!matches.length) { results.style.display = 'none'; return; }
+  results.style.display = 'block';
+  results.innerHTML = matches.map(function(p) {
+    return '<div onclick="spSelectFromSearch(\'' + p.name.replace(/'/g,"&#39;") + '\')" '
+      + 'style="padding:.55rem .85rem;cursor:pointer;font-size:.88rem;border-bottom:1px solid var(--border);'
+      + 'display:flex;justify-content:space-between;align-items:center;transition:background .15s"'
+      + ' onmouseover="this.style.background=\'rgba(167,139,250,.08)\'" onmouseout="this.style.background=\'\'">'
+      + '<span style="font-weight:600">' + p.name + '</span>'
+      + '<span style="font-size:.7rem;color:var(--muted)">' + p.pos + ' · ' + p.rating + '</span>'
+    + '</div>';
+  }).join('');
+}
+
+function spSelectFromSearch(name) {
+  spSelectedPlayer = name;
+  document.getElementById('spPickInput').value = name;
+  document.getElementById('spSearchResults').style.display = 'none';
+  document.getElementById('spSelectedInfo').textContent = '✓ Ausgewählt: ' + name;
+  document.getElementById('spPickError').textContent = '';
+}
+
+function spConfirmPick() {
+  var err = document.getElementById('spPickError');
+  var input = document.getElementById('spPickInput').value.trim();
+  var playerName = spSelectedPlayer || input;
+
+  if (!playerName) { err.textContent = 'Bitte einen Spieler auswählen.'; return; }
+
+  // Check player exists in pool
+  var found = state.pool.find(function(p) { return p.name.toLowerCase() === playerName.toLowerCase(); });
+  if (!found) { err.textContent = 'Spieler nicht im Pool gefunden. Bitte aus der Liste wählen.'; return; }
+
+  securePicks[spLoggedInIdx] = found.name;
+  document.getElementById('spOverlay').classList.remove('open');
+  spLoggedInIdx = null;
+  spSelectedPlayer = null;
+  renderSecurePick();
+  showToast(state.participants[spLoggedInIdx !== null ? spLoggedInIdx : Object.keys(securePicks).length - 1].name + ' hat gesichert: ' + found.name, 'pick');
+}
+
+// Close overlay on outside click
+document.getElementById('spOverlay') && document.getElementById('spOverlay').addEventListener('click', function(e) {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+});
+
+// ── In Ban-Phase: Secure Picks schützen ──
+function isSecured(playerName) {
+  return Object.values(securePicks).indexOf(playerName) !== -1;
+}
+
+function getSecuredByIdx(playerName) {
+  var idx = -1;
+  Object.keys(securePicks).forEach(function(k) {
+    if (securePicks[k] === playerName) idx = parseInt(k);
+  });
+  return idx;
+}
 
 
 // ══════════════════════════════════════
