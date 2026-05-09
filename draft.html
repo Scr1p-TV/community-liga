@@ -863,6 +863,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
         <button class="init-role-btn" id="roleAdminBtn" onclick="initSelectRole('admin')">🔴 Admin</button>
         <button class="init-role-btn" id="roleParticipantBtn" onclick="initSelectRole('participant')">⚡ Teilnehmer</button>
       </div>
+      <div id="initDraftNotStarted" style="display:none;text-align:center;font-size:.72rem;color:var(--muted);margin-bottom:.75rem;padding:.5rem;background:rgba(107,117,133,.08);border-radius:6px;border:1px solid var(--border)">
+        ⏳ Draft noch nicht gestartet – bitte warte auf den Admin
+      </div>
 
       <!-- Admin Section -->
       <div class="init-section" id="initAdminSection">
@@ -1727,6 +1730,17 @@ let currentRole = null;
 let initSelectedParticipantIdx = null;
 
 function initSelectRole(role) {
+  // Block participant login if draft hasn't started yet
+  if (role === 'participant' && state.draft.phase === 'idle') {
+    document.getElementById('initAdminSection').classList.remove('visible');
+    document.getElementById('initParticipantSection').classList.remove('visible');
+    document.getElementById('initDraftNotStarted').style.display = 'block';
+    document.getElementById('initRoleHint').style.display = 'none';
+    document.getElementById('roleAdminBtn').className = 'init-role-btn';
+    document.getElementById('roleParticipantBtn').className = 'init-role-btn';
+    return;
+  }
+  document.getElementById('initDraftNotStarted').style.display = 'none';
   currentRole = role;
   document.getElementById('initAdminSection').classList.toggle('visible', role === 'admin');
   document.getElementById('initParticipantSection').classList.toggle('visible', role === 'participant');
@@ -1832,6 +1846,8 @@ checkReady();
 
 // Show initial login modal on page load
 document.getElementById('initLoginOverlay').style.display = 'flex';
+// Default to Admin role
+initSelectRole('admin');
 </script>
 <script src="players.js"></script>
 </body>
