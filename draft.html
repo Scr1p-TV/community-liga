@@ -1737,16 +1737,29 @@ function spConfirmPick() {
 
   if (!playerName) { err.textContent = 'Bitte einen Spieler auswählen.'; return; }
 
-  // Check player exists in pool
+  // Exakter Match (case-insensitive)
   var found = state.pool.find(function(p) { return p.name.toLowerCase() === playerName.toLowerCase(); });
-  if (!found) { err.textContent = 'Spieler nicht im Pool gefunden. Bitte aus der Liste wählen.'; return; }
 
+  // Kein exakter Match → partielle Suche (enthält den eingetippten Text)
+  if (!found) {
+    var q = playerName.toLowerCase();
+    var matches = state.pool.filter(function(p) { return p.name.toLowerCase().indexOf(q) !== -1; });
+    if (matches.length === 1) {
+      found = matches[0];
+    } else if (matches.length > 1) {
+      err.textContent = 'Mehrere Spieler gefunden – bitte aus der Liste wählen.'; return;
+    } else {
+      err.textContent = 'Spieler nicht im Pool gefunden.'; return;
+    }
+  }
+
+  var savedIdx = spLoggedInIdx;
   securePicks[spLoggedInIdx] = found.name;
   document.getElementById('spOverlay').classList.remove('open');
   spLoggedInIdx = null;
   spSelectedPlayer = null;
   renderSecurePick();
-  showToast(state.participants[spLoggedInIdx !== null ? spLoggedInIdx : Object.keys(securePicks).length - 1].name + ' hat gesichert: ' + found.name, 'pick');
+  showToast(state.participants[savedIdx].name + ' hat gesichert: ' + found.name, 'pick');
 }
 
 // Close overlay on outside click
