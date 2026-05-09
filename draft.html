@@ -840,10 +840,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
       <div class="login-step-label">Passwort</div>
       <div class="login-pw-row">
         <input type="password" id="loginPwInput" placeholder="••••" maxlength="8"
-          onkeydown="if(event.key==='Enter')attemptLogin()">
+          onkeydown="if(event.key==='Enter')attemptNormalLogin()">
       </div>
       <div class="login-error" id="loginError"></div>
-      <button class="btn btn-accent" style="width:100%;justify-content:center" onclick="attemptLogin()">
+      <button class="btn btn-accent" style="width:100%;justify-content:center" onclick="attemptNormalLogin()">
         Einloggen &amp; fortfahren →
       </button>
     </div>
@@ -1154,8 +1154,7 @@ function startDraft(){
   var hasConflict = Object.values(pickCounts).some(function(c){ return c>1; });
   if(hasConflict){
     showToast('Secure Pick Konflikte zuerst lösen!','ban');
-    var spTabs = document.querySelectorAll('.nav-tab');
-    showPage('securepick', spTabs[2]);
+    showPage('securepick', document.getElementById('tab-securepick'));
     return;
   }
   // Stelle sicher alle Spieler ein Passwort haben
@@ -1163,8 +1162,7 @@ function startDraft(){
   state.draft = { phase:'ban', step:0, bans:{}, picks:{}, history:[] };
   loggedInIdx = null;
   document.getElementById('seasonLabel').textContent = state.matchday;
-  const tabs = document.querySelectorAll('.nav-tab');
-  showPage('draft', tabs[2]);
+  showPage('draft', document.getElementById('tab-draft'));
   renderDraft();
   showLoginOverlay();
 }
@@ -1331,8 +1329,7 @@ function resetDraft(){
   closeModal();
   state.draft = { phase:'idle', step:0, bans:{}, picks:{}, history:[] };
   loggedInIdx = null;
-  const tabs = document.querySelectorAll('.nav-tab');
-  showPage('admin', tabs[0]);
+  showPage('admin', document.getElementById('tab-admin'));
 }
 
 // ══════════════════════════════════════
