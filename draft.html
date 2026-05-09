@@ -1712,7 +1712,7 @@ function spSearchPlayers(query) {
   if (!matches.length) { results.style.display = 'none'; return; }
   results.style.display = 'block';
   results.innerHTML = matches.map(function(p) {
-    return '<div onclick="spSelectFromSearch(\'' + p.name.replace(/'/g,"&#39;") + '\')" '
+    return '<div onmousedown="event.preventDefault();spSelectFromSearch(\'' + p.name.replace(/'/g,"&#39;") + '\')" '
       + 'style="padding:.55rem .85rem;cursor:pointer;font-size:.88rem;border-bottom:1px solid var(--border);'
       + 'display:flex;justify-content:space-between;align-items:center;transition:background .15s"'
       + ' onmouseover="this.style.background=\'rgba(167,139,250,.08)\'" onmouseout="this.style.background=\'\'">'
