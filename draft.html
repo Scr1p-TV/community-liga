@@ -403,6 +403,31 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
   min-height:1.1rem;letter-spacing:.04em}
 .login-divider{height:1px;background:var(--border);margin:.85rem 0}
 
+/* ── ADMIN LOCK OVERLAY ── */
+.admin-lock-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.93);
+  backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:1rem}
+.admin-lock-overlay.open{display:flex}
+.admin-lock-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  width:100%;max-width:360px;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.6)}
+.admin-lock-header{padding:1.4rem 1.5rem 1.1rem;background:linear-gradient(135deg,rgba(255,64,96,.07),rgba(255,64,96,.02));
+  border-bottom:1px solid var(--border);text-align:center}
+.admin-lock-icon{font-size:2rem;margin-bottom:.4rem}
+.admin-lock-title{font-family:'Bebas Neue',sans-serif;font-size:1.55rem;letter-spacing:.1em;color:var(--ban)}
+.admin-lock-sub{font-size:.72rem;color:var(--muted);margin-top:.2rem;letter-spacing:.05em}
+.admin-lock-body{padding:1.5rem}
+.admin-lock-label{font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.admin-lock-input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+  padding:.72rem .9rem;border-radius:7px;font-family:'Barlow',sans-serif;font-size:1rem;
+  text-align:center;letter-spacing:.25em;outline:none;transition:border-color .2s;margin-bottom:.65rem}
+.admin-lock-input:focus{border-color:var(--ban);box-shadow:0 0 0 1px rgba(255,64,96,.12)}
+.admin-lock-error{font-size:.76rem;color:var(--ban);text-align:center;min-height:1.1rem;margin-bottom:.65rem;letter-spacing:.04em}
+.admin-lock-btn{width:100%;background:var(--ban);color:#fff;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:.88rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.68rem 1rem;border:none;border-radius:7px;cursor:pointer;transition:background .18s}
+.admin-lock-btn:hover{background:#ff6080}
+.admin-tab-locked{position:relative}
+.admin-tab-locked::after{content:'🔒';position:absolute;top:6px;right:4px;font-size:.55rem;opacity:.6}
+
 /* Passwort-Liste im Admin */
 .pw-list{display:flex;flex-direction:column;gap:.4rem}
 .pw-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;
@@ -432,8 +457,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
 <!-- NAV TABS -->
 <div style="margin-top:58px">
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showPage('admin',this)">⚙ Admin</button>
-    <button class="nav-tab" onclick="showPage('passwords',this)">🔑 Passwörter</button>
+    <button class="nav-tab admin-tab-locked active" id="tab-admin" onclick="requireAdmin('admin',this)">⚙ Admin</button>
+    <button class="nav-tab admin-tab-locked" id="tab-passwords" onclick="requireAdmin('passwords',this)">🔑 Passwörter</button>
     <button class="nav-tab" style="color:#a78bfa" onclick="showPage('securepick',this)">🔒 Secure Pick</button>
     <button class="nav-tab" onclick="showPage('draft',this)">⚡ Draft</button>
     <button class="nav-tab" onclick="showPage('results',this)">📋 Ergebnisse</button>
@@ -793,9 +818,93 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
   </div>
 </div>
 
+<!-- ══════════ ADMIN LOCK OVERLAY ══════════ -->
+<div class="admin-lock-overlay" id="adminLockOverlay">
+  <div class="admin-lock-box">
+    <div class="admin-lock-header">
+      <div class="admin-lock-icon">🔐</div>
+      <div class="admin-lock-title">Admin-Bereich</div>
+      <div class="admin-lock-sub" id="adminLockSub">Admin-Einstellungen – nur für Admins zugänglich</div>
+    </div>
+    <div class="admin-lock-body">
+      <div class="admin-lock-label">Admin-Passwort</div>
+      <input type="password" class="admin-lock-input" id="adminLockInput" placeholder="••••••"
+        onkeydown="if(event.key==='Enter')checkAdminPw()">
+      <div class="admin-lock-error" id="adminLockError"></div>
+      <button class="admin-lock-btn" onclick="checkAdminPw()">🔓 Entsperren</button>
+      <div style="text-align:center;margin-top:.85rem">
+        <button onclick="closeAdminLock()" style="background:none;border:none;color:var(--muted);font-size:.75rem;cursor:pointer;font-family:'Barlow',sans-serif">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
+// ══════════════════════════════════════
+//  ADMIN PASSWORD SYSTEM
+// ══════════════════════════════════════
+// Admin-Passwort als SHA-256-Hash (damit kein Klartext im Quellcode steht)
+// SHA-256 von "ADMIN123" – zum Ändern: neuen Hash generieren und hier eintragen
+// Online-Tool: https://emn178.github.io/online-tools/sha256.html
+const ADMIN_PASSWORD_HASH = '5b40171489659251097e7790fc2f1892e2183a72546fe1df283d07865db9149c'; // = ADMIN123
+let adminUnlocked = false;
+let adminLockTarget = null; // {id, btn}
+
+function requireAdmin(pageId, btn) {
+  if (adminUnlocked) {
+    showPage(pageId, btn);
+    return;
+  }
+  adminLockTarget = { id: pageId, btn: btn };
+  document.getElementById('adminLockSub').textContent =
+    pageId === 'passwords'
+      ? 'Passwörter-Verwaltung – nur für Admins'
+      : 'Admin-Einstellungen – nur für Admins';
+  document.getElementById('adminLockInput').value = '';
+  document.getElementById('adminLockError').textContent = '';
+  document.getElementById('adminLockOverlay').classList.add('open');
+  setTimeout(function() { document.getElementById('adminLockInput').focus(); }, 120);
+}
+
+async function checkAdminPw() {
+  var pw = document.getElementById('adminLockInput').value.trim().toUpperCase();
+  var err = document.getElementById('adminLockError');
+  if (!pw) { err.textContent = 'Bitte Passwort eingeben.'; return; }
+  var h = await sha256(pw);
+  if (h !== ADMIN_PASSWORD_HASH) {
+    err.textContent = 'Falsches Passwort.';
+    document.getElementById('adminLockInput').value = '';
+    document.getElementById('adminLockInput').focus();
+    return;
+  }
+  adminUnlocked = true;
+  document.getElementById('adminLockOverlay').classList.remove('open');
+  document.querySelectorAll('.admin-tab-locked').forEach(function(t) {
+    t.classList.remove('admin-tab-locked');
+  });
+  if (adminLockTarget) {
+    showPage(adminLockTarget.id, adminLockTarget.btn);
+    adminLockTarget = null;
+  }
+  showToast('Admin-Modus aktiviert ✓', 'pick');
+}
+
+function closeAdminLock() {
+  document.getElementById('adminLockOverlay').classList.remove('open');
+  adminLockTarget = null;
+}
+
+// Lock admin again (e.g. after inactivity) – optional, kann per Button aufgerufen werden
+function lockAdmin() {
+  adminUnlocked = false;
+  document.querySelectorAll('#tab-admin,#tab-passwords').forEach(function(t) {
+    t.classList.add('admin-tab-locked');
+  });
+  showToast('Admin gesperrt', '');
+}
+
 // ══════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════
@@ -809,8 +918,16 @@ let posFilter = 'ALL';
 let loggedInIdx = null;  // welcher Spieler gerade eingeloggt ist
 
 // ══════════════════════════════════════
-//  PASSWORT GENERATOR
+//  PASSWORT GENERATOR + HASHING (SHA-256)
 // ══════════════════════════════════════
+// Klartextpasswörter werden NIEMALS im state gespeichert.
+// Nur SHA-256-Hashes. Der Klartext lebt nur kurz im RAM beim Generieren.
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
 function genPassword(){
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let pw = '';
@@ -818,14 +935,27 @@ function genPassword(){
   return pw;
 }
 
-function generateAllPasswords(){
-  state.participants.forEach(p => { p.password = genPassword(); });
+// plainPasswords: temporärer Speicher NUR für die Anzeige im Admin-Passwörter-Tab.
+// Wird beim Verlassen des Tabs geleert. Nie im state gespeichert.
+let plainPasswords = {}; // { participantIndex: 'XKBQ' }
+
+async function generateAllPasswords(){
+  plainPasswords = {};
+  for(let i=0;i<state.participants.length;i++){
+    const pw = genPassword();
+    plainPasswords[i] = pw;
+    state.participants[i].passwordHash = await sha256(pw);
+    delete state.participants[i].password; // sicherheitshalber
+  }
   renderPwList();
   showToast('Passwörter generiert ✓','pick');
 }
 
-function regenPassword(i){
-  state.participants[i].password = genPassword();
+async function regenPassword(i){
+  const pw = genPassword();
+  plainPasswords[i] = pw;
+  state.participants[i].passwordHash = await sha256(pw);
+  delete state.participants[i].password;
   renderPwList();
   showToast('Passwort neu generiert','pick');
 }
@@ -836,25 +966,43 @@ function renderPwList(){
     el.innerHTML = '<div class="empty-state">Erst Teilnehmer im Admin-Tab hinzufügen.</div>';
     return;
   }
-  el.innerHTML = state.participants.map((p,i) => `
-    <div class="pw-item">
+  el.innerHTML = state.participants.map((p,i) => {
+    const plain = plainPasswords[i];
+    const codeHtml = plain
+      ? `<div class="pw-item-code">${plain}</div>`
+      : `<div class="pw-item-code" style="font-size:.75rem;letter-spacing:.05em;color:var(--muted)">neu generieren</div>`;
+    return `<div class="pw-item">
       <div>
         <div class="pw-item-name">${p.name}</div>
-        <div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">Passwort für den Draft</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:.15rem">${p.passwordHash ? '🔒 Hash gespeichert' : '⚠ Kein Passwort'}</div>
       </div>
       <div style="display:flex;align-items:center;gap:.5rem">
-        <div class="pw-item-code">${p.password||'—'}</div>
+        ${codeHtml}
         <button class="pw-regenerate-btn" onclick="regenPassword(${i})" title="Neu generieren">🎲</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function copyAllPasswords(){
   if(!state.participants.length){ showToast('Keine Spieler vorhanden','ban'); return; }
-  const lines = state.participants.map(function(p){ return p.name + ': ' + (p.password || '?'); });
+  const lines = state.participants.map(function(p,i){
+    const plain = plainPasswords[i];
+    return p.name + ': ' + (plain || '(nicht verfügbar – neu generieren)');
+  });
   navigator.clipboard.writeText(lines.join(String.fromCharCode(10)))
-    .then(function(){ showToast('Passwoerter kopiert', 'pick'); })
+    .then(function(){ showToast('Passwörter kopiert', 'pick'); })
     .catch(function(){ showToast('Kopieren fehlgeschlagen', 'ban'); });
+}
+
+// Klartexte beim Seitenwechsel weg vom Passwörter-Tab löschen
+function clearPlainPasswords(){
+  plainPasswords = {};
+}
+
+async function checkPasswordHash(input, hash){
+  const h = await sha256(input.trim().toUpperCase());
+  return h === hash;
 }
 
 // ══════════════════════════════════════
@@ -867,16 +1015,20 @@ function loadLigaPlayers(){
   } catch(e){ return []; }
 }
 
-function importLigaParticipants(){
+async function importLigaParticipants(){
   const ligaPlayers = loadLigaPlayers();
   if(!ligaPlayers.length){ showToast('Keine Liga-Spieler gefunden','ban'); return; }
   let added = 0;
-  ligaPlayers.forEach(p => {
-    if(state.participants.length >= 10) return;
-    if(state.participants.find(x => x.name.toLowerCase() === p.name.toLowerCase())) return;
-    state.participants.push({ name: p.name, password: genPassword() });
+  for(const p of ligaPlayers){
+    if(state.participants.length >= 10) break;
+    if(state.participants.find(x => x.name.toLowerCase() === p.name.toLowerCase())) continue;
+    const pw = genPassword();
+    const hash = await sha256(pw);
+    const idx = state.participants.length;
+    state.participants.push({ name: p.name, passwordHash: hash });
+    plainPasswords[idx] = pw;
     added++;
-  });
+  }
   renderParticipantAdmin();
   checkReady();
   showToast(`${added} Liga-Spieler geladen ✓`, 'pick');
@@ -898,6 +1050,11 @@ function updateLigaImportBanner(){
 //  NAVIGATION
 // ══════════════════════════════════════
 function showPage(id, btn){
+  // Klartextpasswörter löschen wenn Passwörter-Tab verlassen wird
+  const currentActive = document.querySelector('.page.active');
+  if(currentActive && currentActive.id === 'page-passwords' && id !== 'passwords'){
+    clearPlainPasswords();
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
@@ -919,7 +1076,7 @@ function saveMatchday(){
   checkReady();
 }
 
-function addParticipant(){
+async function addParticipant(){
   const input = document.getElementById('participantInput');
   const name = input.value.trim();
   if(!name) return;
@@ -927,7 +1084,11 @@ function addParticipant(){
   if(state.participants.find(p => p.name.toLowerCase() === name.toLowerCase())){
     showToast('Name bereits vorhanden','ban'); return;
   }
-  state.participants.push({ name, password: genPassword() });
+  const pw = genPassword();
+  const hash = await sha256(pw);
+  const idx = state.participants.length;
+  state.participants.push({ name, passwordHash: hash });
+  plainPasswords[idx] = pw;
   input.value = '';
   renderParticipantAdmin();
   renderPwList();
@@ -1047,7 +1208,7 @@ function checkReady(){
 // ══════════════════════════════════════
 //  DRAFT LOGIC
 // ══════════════════════════════════════
-function startDraft(){
+async function startDraft(){
   // Konflikte in Secure Picks prüfen
   var pickCounts = {};
   Object.values(securePicks).forEach(function(n){ if(n) pickCounts[n]=(pickCounts[n]||0)+1; });
@@ -1058,13 +1219,21 @@ function startDraft(){
     showPage('securepick', spTabs[2]);
     return;
   }
-  // Stelle sicher alle Spieler ein Passwort haben
-  state.participants.forEach(p => { if(!p.password) p.password = genPassword(); });
+  // Stelle sicher alle Spieler einen Hash haben
+  for(let i=0;i<state.participants.length;i++){
+    const p = state.participants[i];
+    if(!p.passwordHash){
+      const pw = genPassword();
+      plainPasswords[i] = pw;
+      p.passwordHash = await sha256(pw);
+    }
+    delete p.password; // alten Klartext weg
+  }
   state.draft = { phase:'ban', step:0, bans:{}, picks:{}, history:[] };
   loggedInIdx = null;
   document.getElementById('seasonLabel').textContent = state.matchday;
   const tabs = document.querySelectorAll('.nav-tab');
-  showPage('draft', tabs[2]);
+  showPage('draft', tabs[3]);
   renderDraft();
   showLoginOverlay();
 }
@@ -1133,7 +1302,7 @@ function selectLoginPlayer(i, el){
   document.getElementById('loginPwInput').focus();
 }
 
-function attemptNormalLogin(){
+async function attemptNormalLogin(){
   const pw = document.getElementById('loginPwInput').value.trim().toUpperCase();
   const errEl = document.getElementById('loginError');
 
@@ -1148,7 +1317,8 @@ function attemptNormalLogin(){
   if(selectedLoginIdx !== participantIdx){
     errEl.textContent = 'Du bist nicht dran. Warten auf: ' + state.participants[participantIdx].name; return;
   }
-  if(pw !== p.password){
+  const ok = await checkPasswordHash(pw, p.passwordHash);
+  if(!ok){
     errEl.textContent = 'Falsches Passwort. Versuche es erneut.';
     document.getElementById('loginPwInput').value = '';
     document.getElementById('loginPwInput').focus();
@@ -1160,6 +1330,8 @@ function attemptNormalLogin(){
   document.getElementById('loginOverlay').classList.remove('open');
   showToast(p.name + ' eingeloggt – du bist dran!', 'pick');
 }
+
+function attemptLogin(){ attemptNormalLogin(); }
 
 function checkLoginRequired(){
   const { phase } = currentTurn();
@@ -1499,13 +1671,14 @@ function spSelectPlayer(i, el) {
   document.getElementById('spPwError').textContent = '';
 }
 
-function spCheckPw() {
+async function spCheckPw() {
   var pw = document.getElementById('spPwInput').value.trim().toUpperCase();
   var err = document.getElementById('spPwError');
   if (spSelectedIdx === null) { err.textContent = 'Bitte zuerst deinen Namen wählen.'; return; }
   if (!pw) { err.textContent = 'Passwort eingeben.'; return; }
   var p = state.participants[spSelectedIdx];
-  if (pw !== p.password) {
+  var ok = await checkPasswordHash(pw, p.passwordHash);
+  if (!ok) {
     err.textContent = 'Falsches Passwort.';
     document.getElementById('spPwInput').value = '';
     document.getElementById('spPwInput').focus();
@@ -1626,6 +1799,11 @@ function avatarHTML(player, initials, size) {
 // ══════════════════════════════════════
 updateLigaImportBanner();
 checkReady();
+// Show admin lock on initial load
+(function() {
+  var adminBtn = document.getElementById('tab-admin');
+  requireAdmin('admin', adminBtn);
+})();
 </script>
 <script src="players.js"></script>
 </body>
