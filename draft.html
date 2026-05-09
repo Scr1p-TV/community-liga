@@ -900,16 +900,35 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
 
 <script>
 // ══════════════════════════════════════
-//  STATE
+//  STATE + PERSISTENCE
 // ══════════════════════════════════════
-let state = {
+const STATE_KEY = 'ufl_draft_state';
+function saveState() {
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+function loadSavedState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      return Object.assign(
+        { matchday:'Spieltag 1', participants:[], pool:[],
+          draft:{ phase:'idle', step:0, bans:{}, picks:{}, history:[] } },
+        saved
+      );
+    }
+  } catch(e) {}
+  return null;
+}
+
+let state = loadSavedState() || {
   matchday: 'Spieltag 1',
-  participants: [],  // [{name, password}]
+  participants: [],
   pool: [],
   draft: { phase:'idle', step:0, bans:{}, picks:{}, history:[] }
 };
 let posFilter = 'ALL';
-let loggedInIdx = null;  // welcher Spieler gerade eingeloggt ist
+let loggedInIdx = null;
 
 // ══════════════════════════════════════
 //  PASSWORT GENERATOR
@@ -924,12 +943,14 @@ function genPassword(){
 function generateAllPasswords(){
   state.participants.forEach(p => { p.password = genPassword(); });
   renderPwList();
+  saveState();
   showToast('Passwörter generiert ✓','pick');
 }
 
 function regenPassword(i){
   state.participants[i].password = genPassword();
   renderPwList();
+  saveState();
   showToast('Passwort neu generiert','pick');
 }
 
@@ -981,6 +1002,7 @@ function importLigaParticipants(){
     added++;
   });
   renderParticipantAdmin();
+  saveState();
   checkReady();
   showToast(`${added} Liga-Spieler geladen ✓`, 'pick');
 }
@@ -1019,6 +1041,7 @@ function saveMatchday(){
   state.matchday = document.getElementById('matchdayName').value || 'Spieltag ?';
   document.getElementById('seasonLabel').textContent = state.matchday;
   showToast('Spieltag: ' + state.matchday, '');
+  saveState();
   checkReady();
 }
 
@@ -1034,6 +1057,7 @@ function addParticipant(){
   input.value = '';
   renderParticipantAdmin();
   renderPwList();
+  saveState();
   checkReady();
 }
 
@@ -1041,6 +1065,7 @@ function removeParticipant(i){
   state.participants.splice(i, 1);
   renderParticipantAdmin();
   renderPwList();
+  saveState();
   checkReady();
 }
 
@@ -1071,17 +1096,18 @@ function addPlayerToPool(){
   document.getElementById('playerRating').value = '';
   document.getElementById('playerImg').value = '';
   renderAdminPool();
+  saveState();
   checkReady();
 }
 
 function removeFromPool(i){
   state.pool.splice(i,1);
-  renderAdminPool(); checkReady();
+  renderAdminPool(); saveState(); checkReady();
 }
 
 function clearPool(){
   state.pool = [];
-  renderAdminPool(); checkReady();
+  renderAdminPool(); saveState(); checkReady();
 }
 
 function renderAdminPool(){
@@ -1130,7 +1156,7 @@ function importSamplePlayers(){
       state.pool.push(s); added++;
     }
   });
-  renderAdminPool(); checkReady();
+  renderAdminPool(); saveState(); checkReady();
   showToast(`${added} Spieler geladen`, 'pick');
 }
 
@@ -1164,6 +1190,7 @@ function startDraft(){
   state.participants.forEach(p => { if(!p.password) p.password = genPassword(); });
   state.draft = { phase:'ban', step:0, bans:{}, picks:{}, history:[] };
   loggedInIdx = null;
+  saveState();
   document.getElementById('seasonLabel').textContent = state.matchday;
   showPage('draft', document.getElementById('tab-draft'));
   renderDraft();
@@ -1246,13 +1273,16 @@ function attemptNormalLogin(){
   const { participantIdx } = currentTurn();
   const p = state.participants[selectedLoginIdx];
 
-  if(selectedLoginIdx !== participantIdx){
-    errEl.textContent = 'Du bist nicht dran. Warten auf: ' + state.participants[participantIdx].name; return;
-  }
   if(pw !== p.password){
     errEl.textContent = 'Falsches Passwort. Versuche es erneut.';
     document.getElementById('loginPwInput').value = '';
     document.getElementById('loginPwInput').focus();
+    return;
+  }
+
+  // Passwort korrekt – aber nur der dran seiende Spieler darf jetzt handeln
+  if(selectedLoginIdx !== participantIdx){
+    errEl.textContent = 'Eingeloggt, aber du bist noch nicht dran. Warten auf: ' + state.participants[participantIdx].name;
     return;
   }
 
@@ -1307,7 +1337,8 @@ function handlePlayerClick(playerNameOrEl){
   loggedInIdx = null;
   state.draft.step++;
   if(state.draft.step === 10) state.draft.phase = 'pick';
-  if(state.draft.step >= 20){ state.draft.phase = 'done'; renderDraft(); return; }
+  if(state.draft.step >= 20){ state.draft.phase = 'done'; saveState(); renderDraft(); return; }
+  saveState();
   renderDraft();
   // Kurze Pause dann Login für nächsten Spieler
   setTimeout(showLoginOverlay, 800);
@@ -1321,6 +1352,7 @@ function undoAction(){
   state.draft.step--;
   state.draft.phase = state.draft.step < 10 ? 'ban' : state.draft.step < 20 ? 'pick' : 'done';
   loggedInIdx = null;
+  saveState();
   renderDraft();
   showToast('Rückgängig gemacht', '');
   setTimeout(showLoginOverlay, 600);
@@ -1332,6 +1364,7 @@ function resetDraft(){
   closeModal();
   state.draft = { phase:'idle', step:0, bans:{}, picks:{}, history:[] };
   loggedInIdx = null;
+  saveState();
   showPage('admin', document.getElementById('tab-admin'));
 }
 
@@ -1844,10 +1877,19 @@ function closeInitLogin(role, participantIdx) {
 updateLigaImportBanner();
 checkReady();
 
-// Show initial login modal on page load
+// Restore UI from saved state
+if (state.matchday) document.getElementById('seasonLabel').textContent = state.matchday;
+if (state.participants.length) { renderParticipantAdmin(); renderPwList(); }
+if (state.pool.length) renderAdminPool();
+
+// Show initial login modal
 document.getElementById('initLoginOverlay').style.display = 'flex';
-// Default to Admin role
-initSelectRole('admin');
+// If draft is already running, go straight to participant tab
+if (state.draft.phase !== 'idle') {
+  initSelectRole('participant');
+} else {
+  initSelectRole('admin');
+}
 </script>
 <script src="players.js"></script>
 </body>
