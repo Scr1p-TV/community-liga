@@ -951,7 +951,22 @@ let checkedInParticipants = new Set();
   } catch(e) {}
 })();
 function saveCheckedIn() {
-  try { localStorage.setItem(CHECKIN_KEY, JSON.stringify([...checkedInParticipants])); } catch(e) {}
+  try {
+    // Always merge with current localStorage to avoid tab-overwrite race
+    const raw = localStorage.getItem(CHECKIN_KEY);
+    const existing = raw ? new Set(JSON.parse(raw)) : new Set();
+    checkedInParticipants.forEach(i => existing.add(i));
+    checkedInParticipants = existing;
+    localStorage.setItem(CHECKIN_KEY, JSON.stringify([...existing]));
+  } catch(e) {}
+}
+
+// Read fresh checkedIn from localStorage (used by checkReady)
+function getCheckedIn() {
+  try {
+    const raw = localStorage.getItem(CHECKIN_KEY);
+    return raw ? new Set(JSON.parse(raw)) : checkedInParticipants;
+  } catch(e) { return checkedInParticipants; }
 }
 
 // ══════════════════════════════════════
@@ -1186,10 +1201,13 @@ function checkReady(){
   const list = document.getElementById('checkinList');
   if(!btn || !info) return;
 
+  const fresh = getCheckedIn(); // always read from localStorage
+  checkedInParticipants = fresh; // sync in-memory state
+
   const hasParticipants = state.participants.length === 10;
   const hasPool        = state.pool.length >= 10;
   const allCheckedIn   = hasParticipants &&
-    state.participants.every((_, i) => checkedInParticipants.has(i));
+    state.participants.every((_, i) => fresh.has(i));
   const ok = hasParticipants && hasPool && allCheckedIn;
 
   btn.disabled = !ok;
@@ -1201,7 +1219,7 @@ function checkReady(){
     info.textContent = `Mindestens ${10 - state.pool.length} weitere Spieler im Pool benötigt.`;
     if(wrap) wrap.style.display = 'none';
   } else if(!allCheckedIn){
-    const missing = 10 - checkedInParticipants.size;
+    const missing = 10 - fresh.size;
     info.textContent = `⏳ Warten auf ${missing} Teilnehmer (noch nicht eingeloggt).`;
     if(wrap) wrap.style.display = 'block';
   } else {
@@ -1211,7 +1229,7 @@ function checkReady(){
 
   if(list && hasParticipants){
     list.innerHTML = state.participants.map((p, i) => {
-      const done = checkedInParticipants.has(i);
+      const done = fresh.has(i);
       return `<div style="display:flex;align-items:center;gap:.5rem;background:var(--surface2);
         border:1px solid ${done?'rgba(0,229,160,.3)':'var(--border)'};
         border-radius:6px;padding:.45rem .75rem;font-size:.82rem">
@@ -1922,6 +1940,21 @@ checkReady();
 document.getElementById('initLoginOverlay').style.display = 'flex';
 if(state.draft.phase !== 'idle') initSelectRole('participant');
 else initSelectRole('admin');
+
+// Cross-tab sync: when another tab writes to localStorage, refresh check-in list
+window.addEventListener('storage', function(e) {
+  if(e.key === CHECKIN_KEY) {
+    try { checkedInParticipants = new Set(JSON.parse(e.newValue || '[]')); } catch(err) {}
+    checkReady();
+  }
+  if(e.key === STATE_KEY) {
+    try {
+      const saved = JSON.parse(e.newValue);
+      if(saved) { saved.draft = Object.assign({phase:'idle',step:0,bans:{},picks:{},history:[]}, saved.draft||{}); Object.assign(state, saved); }
+    } catch(err) {}
+    checkReady();
+  }
+});
 
 </script>
 <script src="players.js"></script>
