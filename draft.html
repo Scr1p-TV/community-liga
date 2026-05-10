@@ -908,6 +908,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;op
 //  STATE + PERSISTENCE
 // ══════════════════════════════════════
 const STATE_KEY = 'ufl_draft_state';
+const CHECKIN_KEY = 'ufl_checkedin';
+const ADMIN_PASSWORD = 'ADMIN123'; // ← hier ändern!
+
 function saveState() {
   try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch(e) {}
 }
@@ -916,11 +919,11 @@ function loadSavedState() {
     const raw = localStorage.getItem(STATE_KEY);
     if (raw) {
       const saved = JSON.parse(raw);
-      return Object.assign(
-        { matchday:'Spieltag 1', participants:[], pool:[],
-          draft:{ phase:'idle', step:0, bans:{}, picks:{}, history:[] } },
-        saved
-      );
+      const def = { matchday:'Spieltag 1', participants:[], pool:[],
+                    draft:{ phase:'idle', step:0, bans:{}, picks:{}, history:[] } };
+      // deep merge draft
+      saved.draft = Object.assign(def.draft, saved.draft || {});
+      return Object.assign(def, saved);
     }
   } catch(e) {}
   return null;
@@ -932,8 +935,24 @@ let state = loadSavedState() || {
   pool: [],
   draft: { phase:'idle', step:0, bans:{}, picks:{}, history:[] }
 };
+
+// ── Runtime-only flags (not persisted) ──
 let posFilter = 'ALL';
 let loggedInIdx = null;
+let isAdminLoggedIn = false;
+let selectedLoginIdx = null;
+
+// ── Check-in (persisted separately) ──
+let checkedInParticipants = new Set();
+(function loadCheckedIn() {
+  try {
+    const raw = localStorage.getItem(CHECKIN_KEY);
+    if (raw) checkedInParticipants = new Set(JSON.parse(raw));
+  } catch(e) {}
+})();
+function saveCheckedIn() {
+  try { localStorage.setItem(CHECKIN_KEY, JSON.stringify([...checkedInParticipants])); } catch(e) {}
+}
 
 // ══════════════════════════════════════
 //  PASSWORT GENERATOR
@@ -947,23 +966,21 @@ function genPassword(){
 
 function generateAllPasswords(){
   state.participants.forEach(p => { p.password = genPassword(); });
-  renderPwList();
-  saveState();
+  renderPwList(); saveState();
   showToast('Passwörter generiert ✓','pick');
 }
 
 function regenPassword(i){
   state.participants[i].password = genPassword();
-  renderPwList();
-  saveState();
+  renderPwList(); saveState();
   showToast('Passwort neu generiert','pick');
 }
 
 function renderPwList(){
   const el = document.getElementById('pwList');
+  if(!el) return;
   if(!state.participants.length){
-    el.innerHTML = '<div class="empty-state">Erst Teilnehmer im Admin-Tab hinzufügen.</div>';
-    return;
+    el.innerHTML = '<div class="empty-state">Erst Teilnehmer im Admin-Tab hinzufügen.</div>'; return;
   }
   el.innerHTML = state.participants.map((p,i) => `
     <div class="pw-item">
@@ -980,48 +997,40 @@ function renderPwList(){
 
 function copyAllPasswords(){
   if(!state.participants.length){ showToast('Keine Spieler vorhanden','ban'); return; }
-  const lines = state.participants.map(function(p){ return p.name + ': ' + (p.password || '?'); });
-  navigator.clipboard.writeText(lines.join(String.fromCharCode(10)))
-    .then(function(){ showToast('Passwoerter kopiert', 'pick'); })
-    .catch(function(){ showToast('Kopieren fehlgeschlagen', 'ban'); });
+  const lines = state.participants.map(p => p.name + ': ' + (p.password || '?'));
+  navigator.clipboard.writeText(lines.join('\n'))
+    .then(() => showToast('Passwörter kopiert ✓', 'pick'))
+    .catch(() => showToast('Kopieren fehlgeschlagen', 'ban'));
 }
 
 // ══════════════════════════════════════
-//  LIGA-INTEGRATION (localStorage)
+//  LIGA-INTEGRATION
 // ══════════════════════════════════════
 function loadLigaPlayers(){
-  try {
-    const raw = localStorage.getItem('ufl_players');
-    return raw ? JSON.parse(raw) : [];
-  } catch(e){ return []; }
+  try { return JSON.parse(localStorage.getItem('ufl_players') || '[]'); } catch(e){ return []; }
 }
 
 function importLigaParticipants(){
-  const ligaPlayers = loadLigaPlayers();
-  if(!ligaPlayers.length){ showToast('Keine Liga-Spieler gefunden','ban'); return; }
+  const liga = loadLigaPlayers();
+  if(!liga.length){ showToast('Keine Liga-Spieler gefunden','ban'); return; }
   let added = 0;
-  ligaPlayers.forEach(p => {
+  liga.forEach(p => {
     if(state.participants.length >= 10) return;
     if(state.participants.find(x => x.name.toLowerCase() === p.name.toLowerCase())) return;
     state.participants.push({ name: p.name, password: genPassword() });
     added++;
   });
-  renderParticipantAdmin();
-  saveState();
-  checkReady();
+  renderParticipantAdmin(); renderPwList(); saveState(); checkReady();
   showToast(`${added} Liga-Spieler geladen ✓`, 'pick');
 }
 
 function updateLigaImportBanner(){
-  const ligaPlayers = loadLigaPlayers();
+  const liga = loadLigaPlayers();
   const banner = document.getElementById('ligaImportBanner');
   const count  = document.getElementById('ligaImportCount');
-  if(ligaPlayers.length){
-    banner.style.display = 'flex';
-    count.textContent = `${ligaPlayers.length} Spieler gefunden`;
-  } else {
-    banner.style.display = 'none';
-  }
+  if(!banner) return;
+  if(liga.length){ banner.style.display='flex'; count.textContent=`${liga.length} Spieler gefunden`; }
+  else { banner.style.display='none'; }
 }
 
 // ══════════════════════════════════════
@@ -1032,10 +1041,10 @@ function showPage(id, btn){
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
   if(btn) btn.classList.add('active');
-  if(id === 'results')   renderResults();
-  if(id === 'draft')     { renderDraft(); checkLoginRequired(); }
-  if(id === 'passwords') renderPwList();
-  if(id === 'final4')    renderF4Setup();
+  if(id === 'results')    renderResults();
+  if(id === 'draft')      { renderDraft(); checkLoginRequired(); }
+  if(id === 'passwords')  renderPwList();
+  if(id === 'final4')     renderF4Setup();
   if(id === 'securepick') renderSecurePick();
 }
 
@@ -1046,8 +1055,7 @@ function saveMatchday(){
   state.matchday = document.getElementById('matchdayName').value || 'Spieltag ?';
   document.getElementById('seasonLabel').textContent = state.matchday;
   showToast('Spieltag: ' + state.matchday, '');
-  saveState();
-  checkReady();
+  saveState(); checkReady();
 }
 
 function addParticipant(){
@@ -1060,22 +1068,22 @@ function addParticipant(){
   }
   state.participants.push({ name, password: genPassword() });
   input.value = '';
-  renderParticipantAdmin();
-  renderPwList();
-  saveState();
-  checkReady();
+  renderParticipantAdmin(); renderPwList(); saveState(); checkReady();
 }
 
 function removeParticipant(i){
   state.participants.splice(i, 1);
-  renderParticipantAdmin();
-  renderPwList();
-  saveState();
-  checkReady();
+  // also remove from checkedIn
+  const newSet = new Set();
+  checkedInParticipants.forEach(idx => { if(idx !== i) newSet.add(idx > i ? idx-1 : idx); });
+  checkedInParticipants = newSet;
+  saveCheckedIn();
+  renderParticipantAdmin(); renderPwList(); saveState(); checkReady();
 }
 
 function renderParticipantAdmin(){
   const el = document.getElementById('participantList');
+  if(!el) return;
   if(!state.participants.length){
     el.innerHTML = '<div class="empty-state">Noch keine Teilnehmer</div>'; return;
   }
@@ -1100,9 +1108,7 @@ function addPlayerToPool(){
   document.getElementById('playerName').value = '';
   document.getElementById('playerRating').value = '';
   document.getElementById('playerImg').value = '';
-  renderAdminPool();
-  saveState();
-  checkReady();
+  renderAdminPool(); saveState(); checkReady();
 }
 
 function removeFromPool(i){
@@ -1111,12 +1117,14 @@ function removeFromPool(i){
 }
 
 function clearPool(){
+  if(!confirm('Pool wirklich leeren?')) return;
   state.pool = [];
   renderAdminPool(); saveState(); checkReady();
 }
 
 function renderAdminPool(){
   const el = document.getElementById('adminPlayerList');
+  if(!el) return;
   document.getElementById('poolCount').textContent = state.pool.length + ' Spieler im Pool';
   if(!state.pool.length){ el.innerHTML = '<div class="empty-state">Keine Spieler im Pool</div>'; return; }
   el.innerHTML = state.pool.map((p,i) => `
@@ -1128,85 +1136,90 @@ function renderAdminPool(){
     </div>`).join('');
 }
 
+// Lädt den UFL-Spielerpool aus dem Liga-Tool (localStorage 'ufl_players')
+function loadUFLPool(){
+  const liga = loadLigaPlayers();
+  if(!liga.length){ showToast('Keine UFL-Spieler gefunden. Zuerst in index.html eintragen.','ban'); return; }
+  let added = 0;
+  liga.forEach(p => {
+    if(!state.pool.find(x => x.name.toLowerCase() === p.name.toLowerCase())){
+      state.pool.push({ name: p.name, rating: p.rating||80, pos: p.pos||'—', img: p.avatar||'' });
+      added++;
+    }
+  });
+  renderAdminPool(); saveState(); checkReady();
+  showToast(`${added} UFL-Spieler in den Pool geladen ✓`, 'pick');
+}
+
 function importSamplePlayers(){
   const samples = [
-    {name:'Erling Haaland',rating:94,pos:'ST',img:''},
-    {name:'Kylian Mbappé',rating:93,pos:'ST',img:''},
-    {name:'Vinicius Jr.',rating:92,pos:'LW',img:''},
-    {name:'Jude Bellingham',rating:91,pos:'CAM',img:''},
-    {name:'Rodri',rating:91,pos:'CDM',img:''},
-    {name:'Kevin De Bruyne',rating:91,pos:'CM',img:''},
-    {name:'Lamine Yamal',rating:88,pos:'RW',img:''},
-    {name:'Pedri',rating:88,pos:'CM',img:''},
-    {name:'Federico Valverde',rating:88,pos:'CM',img:''},
-    {name:'Raphinha',rating:87,pos:'RW',img:''},
-    {name:'Phil Foden',rating:88,pos:'CAM',img:''},
-    {name:'Bukayo Saka',rating:87,pos:'RW',img:''},
-    {name:'Harry Kane',rating:90,pos:'ST',img:''},
-    {name:'Virgil van Dijk',rating:88,pos:'CB',img:''},
-    {name:'Alisson Becker',rating:89,pos:'GK',img:''},
-    {name:'Trent Alexander-Arnold',rating:87,pos:'RB',img:''},
-    {name:'Theo Hernandez',rating:86,pos:'LB',img:''},
-    {name:'Gavi',rating:86,pos:'CM',img:''},
-    {name:'Antoine Griezmann',rating:87,pos:'CAM',img:''},
-    {name:'Robert Lewandowski',rating:89,pos:'ST',img:''},
-    {name:'Dušan Vlahović',rating:86,pos:'ST',img:''},
-    {name:'Khvicha Kvaratskhelia',rating:87,pos:'LW',img:''},
-    {name:'Ousmane Dembélé',rating:87,pos:'RW',img:''},
-    {name:'Marc-André ter Stegen',rating:88,pos:'GK',img:''},
+    {name:'Erling Haaland',rating:94,pos:'ST'},{name:'Kylian Mbappé',rating:93,pos:'ST'},
+    {name:'Vinicius Jr.',rating:92,pos:'LW'},{name:'Jude Bellingham',rating:91,pos:'CAM'},
+    {name:'Rodri',rating:91,pos:'CDM'},{name:'Kevin De Bruyne',rating:91,pos:'CM'},
+    {name:'Lamine Yamal',rating:88,pos:'RW'},{name:'Pedri',rating:88,pos:'CM'},
+    {name:'Federico Valverde',rating:88,pos:'CM'},{name:'Raphinha',rating:87,pos:'RW'},
+    {name:'Phil Foden',rating:88,pos:'CAM'},{name:'Bukayo Saka',rating:87,pos:'RW'},
+    {name:'Harry Kane',rating:90,pos:'ST'},{name:'Virgil van Dijk',rating:88,pos:'CB'},
+    {name:'Alisson Becker',rating:89,pos:'GK'},{name:'Trent Alexander-Arnold',rating:87,pos:'RB'},
+    {name:'Theo Hernandez',rating:86,pos:'LB'},{name:'Gavi',rating:86,pos:'CM'},
+    {name:'Antoine Griezmann',rating:87,pos:'CAM'},{name:'Robert Lewandowski',rating:89,pos:'ST'},
+    {name:'Dušan Vlahović',rating:86,pos:'ST'},{name:'Khvicha Kvaratskhelia',rating:87,pos:'LW'},
+    {name:'Ousmane Dembélé',rating:87,pos:'RW'},{name:'Marc-André ter Stegen',rating:88,pos:'GK'},
   ];
   let added = 0;
   samples.forEach(s => {
     if(!state.pool.find(p => p.name.toLowerCase() === s.name.toLowerCase())){
-      state.pool.push(s); added++;
+      state.pool.push({...s, img:''}); added++;
     }
   });
   renderAdminPool(); saveState(); checkReady();
-  showToast(`${added} Spieler geladen`, 'pick');
+  showToast(`${added} Spieler geladen ✓`, 'pick');
 }
 
+// ══════════════════════════════════════
+//  CHECK READY + CHECK-IN
+// ══════════════════════════════════════
 function checkReady(){
   const btn  = document.getElementById('startBtn');
   const info = document.getElementById('startInfo');
   const wrap = document.getElementById('checkinWrap');
   const list = document.getElementById('checkinList');
+  if(!btn || !info) return;
 
-  const hasEnoughParticipants = state.participants.length === 10;
-  const hasEnoughPool = state.pool.length >= 10;
-  const allCheckedIn = hasEnoughParticipants &&
+  const hasParticipants = state.participants.length === 10;
+  const hasPool        = state.pool.length >= 10;
+  const allCheckedIn   = hasParticipants &&
     state.participants.every((_, i) => checkedInParticipants.has(i));
-  const ok = hasEnoughParticipants && hasEnoughPool && allCheckedIn;
+  const ok = hasParticipants && hasPool && allCheckedIn;
 
   btn.disabled = !ok;
 
-  if (!hasEnoughParticipants) {
+  if(!hasParticipants){
     info.textContent = `Noch ${10 - state.participants.length} Teilnehmer benötigt.`;
-    if (wrap) wrap.style.display = 'none';
-  } else if (!hasEnoughPool) {
-    info.textContent = `Mindestens ${10 - state.pool.length} weitere Spieler benötigt.`;
-    if (wrap) wrap.style.display = 'none';
-  } else if (!allCheckedIn) {
-    const missing = state.participants.length - checkedInParticipants.size;
-    info.textContent = `⏳ Warten auf ${missing} Teilnehmer die sich noch nicht eingeloggt haben.`;
-    if (wrap) wrap.style.display = 'block';
+    if(wrap) wrap.style.display = 'none';
+  } else if(!hasPool){
+    info.textContent = `Mindestens ${10 - state.pool.length} weitere Spieler im Pool benötigt.`;
+    if(wrap) wrap.style.display = 'none';
+  } else if(!allCheckedIn){
+    const missing = 10 - checkedInParticipants.size;
+    info.textContent = `⏳ Warten auf ${missing} Teilnehmer (noch nicht eingeloggt).`;
+    if(wrap) wrap.style.display = 'block';
   } else {
-    info.textContent = `✓ Alle ${state.participants.length} Teilnehmer eingeloggt – bereit!`;
-    if (wrap) wrap.style.display = 'block';
+    info.textContent = `✓ Alle 10 Teilnehmer eingeloggt – bereit zum Starten!`;
+    if(wrap) wrap.style.display = 'block';
   }
 
-  // Render check-in list
-  if (list && hasEnoughParticipants) {
-    list.innerHTML = state.participants.map(function(p, i) {
+  if(list && hasParticipants){
+    list.innerHTML = state.participants.map((p, i) => {
       const done = checkedInParticipants.has(i);
-      return '<div style="display:flex;align-items:center;gap:.5rem;background:var(--surface2);'
-        + 'border:1px solid ' + (done ? 'rgba(0,229,160,.3)' : 'var(--border)') + ';'
-        + 'border-radius:6px;padding:.45rem .75rem;font-size:.82rem">'
-        + '<span style="font-size:.9rem">' + (done ? '✅' : '⏳') + '</span>'
-        + '<span style="font-weight:600;flex:1">' + p.name + '</span>'
-        + (done
-          ? '<span style="font-size:.65rem;color:var(--pick);font-weight:700;letter-spacing:.08em">BEREIT</span>'
-          : '<span style="font-size:.65rem;color:var(--muted);letter-spacing:.08em">WARTET</span>')
-        + '</div>';
+      return `<div style="display:flex;align-items:center;gap:.5rem;background:var(--surface2);
+        border:1px solid ${done?'rgba(0,229,160,.3)':'var(--border)'};
+        border-radius:6px;padding:.45rem .75rem;font-size:.82rem">
+        <span>${done?'✅':'⏳'}</span>
+        <span style="font-weight:600;flex:1">${p.name}</span>
+        <span style="font-size:.65rem;color:${done?'var(--pick)':'var(--muted)'};font-weight:700;letter-spacing:.08em">
+          ${done?'BEREIT':'WARTET'}
+        </span></div>`;
     }).join('');
   }
 }
@@ -1215,16 +1228,14 @@ function checkReady(){
 //  DRAFT LOGIC
 // ══════════════════════════════════════
 function startDraft(){
-  // Konflikte in Secure Picks prüfen
-  var pickCounts = {};
-  Object.values(securePicks).forEach(function(n){ if(n) pickCounts[n]=(pickCounts[n]||0)+1; });
-  var hasConflict = Object.values(pickCounts).some(function(c){ return c>1; });
-  if(hasConflict){
+  // Secure-Pick-Konflikte prüfen
+  const pickCounts = {};
+  Object.values(securePicks).forEach(n => { if(n) pickCounts[n] = (pickCounts[n]||0)+1; });
+  if(Object.values(pickCounts).some(c => c>1)){
     showToast('Secure Pick Konflikte zuerst lösen!','ban');
     showPage('securepick', document.getElementById('tab-securepick'));
     return;
   }
-  // Stelle sicher alle Spieler ein Passwort haben
   state.participants.forEach(p => { if(!p.password) p.password = genPassword(); });
   state.draft = { phase:'ban', step:0, bans:{}, picks:{}, history:[] };
   loggedInIdx = null;
@@ -1232,7 +1243,9 @@ function startDraft(){
   document.getElementById('seasonLabel').textContent = state.matchday;
   showPage('draft', document.getElementById('tab-draft'));
   renderDraft();
-  showLoginOverlay();
+  // Admin überspringt Login-Overlay
+  if(isAdminLoggedIn) { loggedInIdx = 0; }
+  else showLoginOverlay();
 }
 
 function currentTurn(){
@@ -1243,56 +1256,58 @@ function currentTurn(){
 }
 
 // ══════════════════════════════════════
-//  LOGIN SYSTEM
+//  LOGIN SYSTEM (Draft-internes Modal)
 // ══════════════════════════════════════
 function showLoginOverlay(){
   const { phase, participantIdx } = currentTurn();
   if(phase === 'done') return;
-  // Admin braucht kein Login-Overlay
-  if(isAdminLoggedIn) { loggedInIdx = participantIdx; return; }
+  if(isAdminLoggedIn){ loggedInIdx = participantIdx; return; }
   loggedInIdx = null;
   const hint = document.getElementById('loginPhaseHint');
-  hint.textContent = phase === 'ban'
+  if(hint) hint.textContent = phase === 'ban'
     ? 'Ban-Phase – wähle deinen Namen und gib dein Passwort ein'
     : 'Pick-Phase – wähle deinen Namen und gib dein Passwort ein';
   renderLoginGrid();
-  document.getElementById('loginPwInput').value = '';
-  document.getElementById('loginError').textContent = '';
+  const pwEl = document.getElementById('loginPwInput');
+  const errEl = document.getElementById('loginError');
+  if(pwEl) pwEl.value = '';
+  if(errEl) errEl.textContent = '';
   document.getElementById('loginOverlay').classList.add('open');
-  setTimeout(()=>document.getElementById('loginPwInput').focus(), 120);
+  setTimeout(() => { if(pwEl) pwEl.focus(); }, 120);
 }
 
 function renderLoginGrid(){
   const { participantIdx } = currentTurn();
   const grid = document.getElementById('loginPlayerGrid');
-  const ligaPlayers = loadLigaPlayers();
+  if(!grid) return;
+  const liga = loadLigaPlayers();
   const pMap = {};
-  ligaPlayers.forEach(p => { pMap[p.name] = p; });
+  liga.forEach(p => { pMap[p.name] = p; });
 
-  grid.innerHTML = state.participants.map((p,i) => {
+  // Who has already completed BOTH their ban AND pick?
+  grid.innerHTML = state.participants.map((p, i) => {
+    const hasBan  = Object.prototype.hasOwnProperty.call(state.draft.bans,  String(i));
+    const hasPick = Object.prototype.hasOwnProperty.call(state.draft.picks, String(i));
+    const alreadyDone = hasBan && hasPick;
     const isCurrentTurn = i === participantIdx;
-    const alreadyDone = state.draft.bans[i] !== undefined && state.draft.picks[i] !== undefined;
     const init = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const ligaP = pMap[p.name];
-    const av = avatarHTML(ligaP || {name: p.name}, init);
+    const av = avatarHTML(pMap[p.name] || { name: p.name }, init);
+
     if(alreadyDone){
-      return '<div class="login-player-btn logged-in">'
-        + '<div class="lp-init">' + av + '</div>'
-        + '<div class="lp-name">' + p.name + '</div>'
-        + '<div class="lp-done">&#10003; Fertig</div>'
-        + '</div>';
+      return `<div class="login-player-btn logged-in">
+        <div class="lp-init">${av}</div>
+        <div class="lp-name">${p.name}</div>
+        <div class="lp-done">✓ Fertig</div></div>`;
     }
-    const activeHint = isCurrentTurn
+    const hint = isCurrentTurn
       ? '<div style="font-size:.6rem;color:var(--accent)">Du bist dran</div>' : '';
-    return '<div class="login-player-btn ' + (isCurrentTurn ? 'selected' : '') + '" onclick="selectLoginPlayer(' + i + ',this)">'
-      + '<div class="lp-init">' + av + '</div>'
-      + '<div class="lp-name">' + p.name + '</div>'
-      + activeHint
-      + '</div>';
+    return `<div class="login-player-btn ${isCurrentTurn?'selected':''}" onclick="selectLoginPlayer(${i},this)">
+      <div class="lp-init">${av}</div>
+      <div class="lp-name">${p.name}</div>
+      ${hint}</div>`;
   }).join('');
 }
 
-let selectedLoginIdx = null;
 function selectLoginPlayer(i, el){
   selectedLoginIdx = i;
   document.querySelectorAll('.login-player-btn').forEach(b => b.classList.remove('selected'));
@@ -1302,30 +1317,25 @@ function selectLoginPlayer(i, el){
 }
 
 function attemptNormalLogin(){
-  const pw = document.getElementById('loginPwInput').value.trim().toUpperCase();
+  const pw    = document.getElementById('loginPwInput').value.trim().toUpperCase();
   const errEl = document.getElementById('loginError');
-
-  if(selectedLoginIdx === null){
-    errEl.textContent = 'Bitte zuerst deinen Namen wählen.'; return;
-  }
+  if(selectedLoginIdx === null){ errEl.textContent = 'Bitte zuerst deinen Namen wählen.'; return; }
   if(!pw){ errEl.textContent = 'Passwort eingeben.'; return; }
 
-  const { participantIdx } = currentTurn();
   const p = state.participants[selectedLoginIdx];
-
+  if(!p){ errEl.textContent = 'Unbekannter Spieler.'; return; }
   if(pw !== p.password){
-    errEl.textContent = 'Falsches Passwort. Versuche es erneut.';
+    errEl.textContent = 'Falsches Passwort.';
     document.getElementById('loginPwInput').value = '';
     document.getElementById('loginPwInput').focus();
     return;
   }
 
-  // Passwort korrekt – aber nur der dran seiende Spieler darf jetzt handeln
+  const { participantIdx } = currentTurn();
   if(selectedLoginIdx !== participantIdx){
-    errEl.textContent = 'Eingeloggt, aber du bist noch nicht dran. Warten auf: ' + state.participants[participantIdx].name;
+    errEl.textContent = 'Du bist noch nicht dran. Warten auf: ' + state.participants[participantIdx].name;
     return;
   }
-
   loggedInIdx = selectedLoginIdx;
   selectedLoginIdx = null;
   document.getElementById('loginOverlay').classList.remove('open');
@@ -1333,83 +1343,85 @@ function attemptNormalLogin(){
 }
 
 function checkLoginRequired(){
+  if(isAdminLoggedIn) return;
+  if(state.draft.phase === 'idle') return;
   const { phase } = currentTurn();
   if(phase === 'done') return;
   if(loggedInIdx === null) showLoginOverlay();
 }
 
+// ══════════════════════════════════════
+//  HANDLE PICK / BAN
+// ══════════════════════════════════════
 function handlePlayerClick(playerNameOrEl){
   const playerName = (typeof playerNameOrEl === 'string') ? playerNameOrEl : playerNameOrEl.dataset.name;
-  // Secure Picks können nicht gebannt werden
   const { phase, participantIdx } = currentTurn();
   if(phase === 'done') return;
-  // Secure Picks können nicht gebannt werden
+
   if(phase === 'ban' && isSecured(playerName)){
-    showToast('Dieser Spieler ist gesichert und kann nicht gebannt werden!', 'ban');
-    return;
+    showToast('Dieser Spieler ist gesichert und kann nicht gebannt werden!', 'ban'); return;
   }
 
-  // Login-Check: Admin darf immer handeln, sonst muss der richtige Spieler eingeloggt sein
-  if(isAdminLoggedIn) {
-    loggedInIdx = participantIdx; // Admin agiert als aktueller Spieler
+  if(isAdminLoggedIn){
+    loggedInIdx = participantIdx;
   } else if(loggedInIdx !== participantIdx){
     showLoginOverlay(); return;
   }
 
   const player = state.pool.find(p => p.name === playerName);
   if(!player) return;
-  if(state.draft.bans[playerName] !== undefined) return;
-  if(state.draft.picks[playerName] !== undefined) return;
+
+  // Check player not already banned or picked (by index)
+  const bannedBy  = Object.keys(state.draft.bans).find(k => state.draft.bans[k]  === playerName);
+  const pickedBy  = Object.keys(state.draft.picks).find(k => state.draft.picks[k] === playerName);
+  if(bannedBy !== undefined || pickedBy !== undefined) return;
 
   if(phase === 'ban'){
-    const alreadyBanned = Object.entries(state.draft.bans).find(([k]) => +k === participantIdx);
-    if(alreadyBanned) return;
-    state.draft.bans[participantIdx] = playerName;
+    if(Object.prototype.hasOwnProperty.call(state.draft.bans, String(participantIdx))) return;
+    state.draft.bans[String(participantIdx)] = playerName;
     state.draft.history.push({ participantIdx, action:'ban', playerName });
     showToast(`${state.participants[participantIdx].name} bannt ${playerName}`, 'ban');
   } else {
-    const alreadyPicked = Object.entries(state.draft.picks).find(([k]) => +k === participantIdx);
-    if(alreadyPicked) return;
-    state.draft.picks[participantIdx] = playerName;
+    if(Object.prototype.hasOwnProperty.call(state.draft.picks, String(participantIdx))) return;
+    state.draft.picks[String(participantIdx)] = playerName;
     state.draft.history.push({ participantIdx, action:'pick', playerName });
     showToast(`${state.participants[participantIdx].name} pickt ${playerName}`, 'pick');
   }
 
-  // Nach dem Pick/Ban: ausloggen und nächsten einloggen lassen
   loggedInIdx = null;
   state.draft.step++;
   if(state.draft.step === 10) state.draft.phase = 'pick';
-  if(state.draft.step >= 20){ state.draft.phase = 'done'; saveState(); renderDraft(); return; }
-  saveState();
-  renderDraft();
-  // Kurze Pause dann Login für nächsten Spieler
+  if(state.draft.step >= 20){
+    state.draft.phase = 'done';
+    saveState(); renderDraft(); return;
+  }
+  saveState(); renderDraft();
   setTimeout(showLoginOverlay, 800);
 }
 
 function undoAction(){
   if(!state.draft.history.length) return;
   const last = state.draft.history.pop();
-  if(last.action === 'ban') delete state.draft.bans[last.participantIdx];
-  else delete state.draft.picks[last.participantIdx];
+  if(last.action === 'ban') delete state.draft.bans[String(last.participantIdx)];
+  else delete state.draft.picks[String(last.participantIdx)];
   state.draft.step--;
   state.draft.phase = state.draft.step < 10 ? 'ban' : state.draft.step < 20 ? 'pick' : 'done';
   loggedInIdx = null;
-  saveState();
-  renderDraft();
+  saveState(); renderDraft();
   showToast('Rückgängig gemacht', '');
   setTimeout(showLoginOverlay, 600);
 }
 
 function confirmReset(){ document.getElementById('confirmModal').classList.add('open'); }
 function closeModal()  { document.getElementById('confirmModal').classList.remove('open'); }
+
 function resetDraft(){
   closeModal();
   state.draft = { phase:'idle', step:0, bans:{}, picks:{}, history:[] };
   loggedInIdx = null;
   isAdminLoggedIn = false;
   checkedInParticipants = new Set();
-  saveCheckedIn();
-  saveState();
+  saveCheckedIn(); saveState();
   showPage('admin', document.getElementById('tab-admin'));
   checkReady();
 }
@@ -1799,17 +1811,13 @@ function avatarHTML(player, initials, size) {
   return src
     ? '<img src="' + src + '" style="width:' + s + ';height:' + s + ';object-fit:cover;border-radius:50%" alt="">'
     : initials;
-}
-// ══════════════════════════════════════
+}// ══════════════════════════════════════
 //  INITIAL LOGIN MODAL
 // ══════════════════════════════════════
-const ADMIN_PASSWORD = 'ADMIN123'; // Admin-Passwort – hier ändern!
-
 let currentRole = null;
 let initSelectedParticipantIdx = null;
 
 function initSelectRole(role) {
-  // Block participant login if draft hasn't started yet
   if (role === 'participant' && state.draft.phase === 'idle') {
     document.getElementById('initAdminSection').classList.remove('visible');
     document.getElementById('initParticipantSection').classList.remove('visible');
@@ -1825,70 +1833,63 @@ function initSelectRole(role) {
   document.getElementById('initParticipantSection').classList.toggle('visible', role === 'participant');
   document.getElementById('initAdminError').textContent = '';
   document.getElementById('initParticipantError').textContent = '';
-  document.getElementById('roleAdminBtn').className = 'init-role-btn' + (role === 'admin' ? ' active-admin' : '');
-  document.getElementById('roleParticipantBtn').className = 'init-role-btn' + (role === 'participant' ? ' active-participant' : '');
+  document.getElementById('roleAdminBtn').className = 'init-role-btn' + (role==='admin' ? ' active-admin' : '');
+  document.getElementById('roleParticipantBtn').className = 'init-role-btn' + (role==='participant' ? ' active-participant' : '');
   document.getElementById('initRoleHint').style.display = 'none';
-  if (role === 'participant') {
-    renderInitPlayerGrid();
-    setTimeout(function(){ document.getElementById('initParticipantPw').focus(); }, 100);
-  } else {
-    setTimeout(function(){ document.getElementById('initAdminPw').focus(); }, 100);
-  }
+  if(role === 'participant'){ renderInitPlayerGrid(); setTimeout(()=>document.getElementById('initParticipantPw').focus(), 100); }
+  else { setTimeout(()=>document.getElementById('initAdminPw').focus(), 100); }
 }
 
 function renderInitPlayerGrid() {
-  var grid = document.getElementById('initPlayerGrid');
-  if (!state.participants.length) {
-    grid.innerHTML = '<div class="init-no-participants">Noch keine Teilnehmer.<br>Bitte zuerst den Admin fragen.</div>';
-    return;
+  const grid = document.getElementById('initPlayerGrid');
+  if(!state.participants.length){
+    grid.innerHTML = '<div class="init-no-participants">Noch keine Teilnehmer.<br>Bitte zuerst den Admin fragen.</div>'; return;
   }
   initSelectedParticipantIdx = null;
-  grid.innerHTML = state.participants.map(function(p, i) {
-    var init = p.name.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
-    var src = getAvatar(p);
-    var avContent = src ? '<img src="' + src + '" alt="">' : init;
-    return '<button class="init-player-btn" id="initPBtn' + i + '" onclick="initSelectPlayer(' + i + ',this)">'
-      + '<div class="ipb-av">' + avContent + '</div>'
-      + '<div class="ipb-name">' + p.name + '</div>'
-      + '</button>';
+  grid.innerHTML = state.participants.map((p, i) => {
+    const init = p.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const src = getAvatar(p);
+    const av = src ? `<img src="${src}" alt="">` : init;
+    return `<button class="init-player-btn" id="initPBtn${i}" onclick="initSelectPlayer(${i},this)">
+      <div class="ipb-av">${av}</div>
+      <div class="ipb-name">${p.name}</div></button>`;
   }).join('');
 }
 
 function initSelectPlayer(i, el) {
   initSelectedParticipantIdx = i;
-  document.querySelectorAll('.init-player-btn').forEach(function(b){ b.classList.remove('selected'); });
+  document.querySelectorAll('.init-player-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   document.getElementById('initParticipantError').textContent = '';
   document.getElementById('initParticipantPw').focus();
 }
 
 function initAttemptAdmin() {
-  var pw = document.getElementById('initAdminPw').value.trim();
-  var err = document.getElementById('initAdminError');
-  if (!pw) { err.textContent = 'Bitte Passwort eingeben.'; return; }
-  if (pw !== ADMIN_PASSWORD) {
+  const pw  = document.getElementById('initAdminPw').value.trim();
+  const err = document.getElementById('initAdminError');
+  if(!pw){ err.textContent = 'Passwort eingeben.'; return; }
+  if(pw !== ADMIN_PASSWORD){
     err.textContent = 'Falsches Admin-Passwort.';
     document.getElementById('initAdminPw').value = '';
     document.getElementById('initAdminPw').focus();
     return;
   }
-  // Admin: show all tabs
   closeInitLogin('admin');
 }
 
 function initAttemptParticipant() {
-  var err = document.getElementById('initParticipantError');
-  if (initSelectedParticipantIdx === null) { err.textContent = 'Bitte zuerst deinen Namen wählen.'; return; }
-  var pw = document.getElementById('initParticipantPw').value.trim().toUpperCase();
-  if (!pw) { err.textContent = 'Passwort eingeben.'; return; }
-  var p = state.participants[initSelectedParticipantIdx];
-  if (pw !== p.password) {
+  const err = document.getElementById('initParticipantError');
+  if(initSelectedParticipantIdx === null){ err.textContent = 'Bitte zuerst deinen Namen wählen.'; return; }
+  const pw = document.getElementById('initParticipantPw').value.trim().toUpperCase();
+  if(!pw){ err.textContent = 'Passwort eingeben.'; return; }
+  const p = state.participants[initSelectedParticipantIdx];
+  if(!p){ err.textContent = 'Teilnehmer nicht gefunden.'; return; }
+  if(pw !== p.password){
     err.textContent = 'Falsches Passwort.';
     document.getElementById('initParticipantPw').value = '';
     document.getElementById('initParticipantPw').focus();
     return;
   }
-  // Teilnehmer einchecken
   checkedInParticipants.add(initSelectedParticipantIdx);
   saveCheckedIn();
   checkReady();
@@ -1897,24 +1898,13 @@ function initAttemptParticipant() {
 
 function closeInitLogin(role, participantIdx) {
   document.getElementById('initLoginOverlay').style.display = 'none';
-  var adminOnlyTabs = ['tab-admin','tab-passwords'];
-  if (role === 'participant') {
-    // Teilnehmer: Admin-Tabs ausblenden, dann Draft-Login öffnen
-    adminOnlyTabs.forEach(function(id){
-      var el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-    var draftTab = document.getElementById('tab-draft');
-    showPage('draft', draftTab);
-    // Direkt das Draft-Login-Overlay öffnen (Bild 2)
-    // loggedInIdx NICHT setzen – das übernimmt attemptNormalLogin
+  const adminOnlyTabs = ['tab-admin','tab-passwords'];
+  if(role === 'participant'){
+    adminOnlyTabs.forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+    showPage('draft', document.getElementById('tab-draft'));
     showLoginOverlay();
   } else {
-    // Admin: alle Tabs sichtbar
-    adminOnlyTabs.forEach(function(id){
-      var el = document.getElementById(id);
-      if (el) el.style.display = '';
-    });
+    adminOnlyTabs.forEach(id => { const el=document.getElementById(id); if(el) el.style.display=''; });
     isAdminLoggedIn = true;
     showToast('Admin eingeloggt ✓', 'pick');
   }
@@ -1924,21 +1914,15 @@ function closeInitLogin(role, participantIdx) {
 //  INIT
 // ══════════════════════════════════════
 updateLigaImportBanner();
+if(state.matchday) document.getElementById('seasonLabel').textContent = state.matchday;
+if(state.participants.length){ renderParticipantAdmin(); renderPwList(); }
+if(state.pool.length) renderAdminPool();
 checkReady();
 
-// Restore UI from saved state
-if (state.matchday) document.getElementById('seasonLabel').textContent = state.matchday;
-if (state.participants.length) { renderParticipantAdmin(); renderPwList(); checkReady(); }
-if (state.pool.length) renderAdminPool();
-
-// Show initial login modal
 document.getElementById('initLoginOverlay').style.display = 'flex';
-// If draft is already running, go straight to participant tab
-if (state.draft.phase !== 'idle') {
-  initSelectRole('participant');
-} else {
-  initSelectRole('admin');
-}
+if(state.draft.phase !== 'idle') initSelectRole('participant');
+else initSelectRole('admin');
+
 </script>
 <script src="players.js"></script>
 </body>
