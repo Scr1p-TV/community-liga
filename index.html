@@ -1265,9 +1265,11 @@ renderAdminBody = function() {
     const sel = document.createElement('div');
     sel.id = 'admin-liga-sel';
     sel.style.cssText = 'display:flex;gap:.5rem;margin:.6rem 0;padding:.6rem;background:var(--dark);border-radius:8px;';
+    var apexActive = activeLiga==='apex' ? ' active' : '';
+    var novaActive = activeLiga==='nova' ? ' active' : '';
     sel.innerHTML = '<span style="font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.1em;align-self:center;white-space:nowrap">LIGA:</span>'
-      + '<button onclick="adminSwitchLiga('apex',this)" class="liga-tab'+(activeLiga==='apex'?' active':'')+'" style="--lc:#f0a500;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#f0a500"></span> Apex</button>'
-      + '<button onclick="adminSwitchLiga('nova',this)" class="liga-tab'+(activeLiga==='nova'?' active':'')+'" style="--lc:#a78bfa;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#a78bfa"></span> Nova</button>';
+      + '<button onclick="adminSwitchLiga(\'apex\',this)" class="liga-tab' + apexActive + '" style="--lc:#f0a500;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#f0a500"></span> Apex</button>'
+      + '<button onclick="adminSwitchLiga(\'nova\',this)" class="liga-tab' + novaActive + '" style="--lc:#a78bfa;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#a78bfa"></span> Nova</button>';
     tabs.parentNode.insertBefore(sel, tabs);
   }
 };
