@@ -20,6 +20,29 @@ a{color:inherit;text-decoration:none}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.2;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E")}
 
+/* LIGA TABS */
+.liga-tabs{display:flex;gap:.5rem;margin-bottom:1.2rem;flex-wrap:wrap}
+.liga-tab{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.45rem 1.1rem;border-radius:20px;
+  border:1px solid var(--border);background:var(--card);
+  color:var(--muted);font-size:.8rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  transition:all .2s;white-space:nowrap;font-family:inherit;
+}
+.liga-tab:hover{border-color:var(--lc,var(--green));color:var(--text)}
+.liga-tab.active{
+  background:rgba(var(--lc-rgb,0,230,118),.1);
+  border-color:var(--lc,var(--green));
+  color:var(--text);
+}
+.liga-tab-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.liga-head-info{
+  font-size:.75rem;color:var(--muted);margin-bottom:1rem;
+  padding:.4rem .8rem;background:var(--card);border-radius:8px;
+  border:1px solid var(--border);display:inline-block;
+}
+
 /* NAV */
 .nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;
   background:rgba(8,11,14,.9);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);
@@ -389,8 +412,8 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
     <li><a href="#teilnehmer">Teilnehmer</a></li>
     <li><a href="#streams">Streams</a></li>
     <li><a href="#bewerbung" class="nav-cta">Bewerben</a></li>
-  <li><a href="https://scr1p-tv.github.io/Community-liga-draft/" class="nav-links-draft" target="_blank">⚡ Draft</a></li>    <li><button class="nav-admin-btn" onclick="openAdmin()">⚙️ Admin</button></li>
-  
+  <li><a href="https://scr1p-tv.github.io/Community-liga-draft/" class="nav-links-draft" target="_blank">⚡ Draft</a></li>
+  <li><button class="nav-admin-btn" onclick="openAdmin()">⚙️ Admin</button></li>
   </ul>
   <button class="nav-burger" id="burger"><span></span><span></span><span></span></button>
 </nav>
@@ -422,7 +445,17 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 <!-- TABELLE -->
 <div class="section reveal" id="tabelle">
   <p class="section-eyebrow">Liga</p>
-  <h2 class="section-title">Aktuelle Tabelle</h2>
+  <h2 class="section-title">Aktuelle Tabellen</h2>
+  <!-- Liga Tabs -->
+  <div class="liga-tabs" id="tabelle-tabs">
+    <button class="liga-tab active" onclick="switchLigaTab('apex',this)" style="--lc:#f0a500">
+      <span class="liga-tab-dot" style="background:#f0a500"></span> Liga Apex
+    </button>
+    <button class="liga-tab" onclick="switchLigaTab('nova',this)" style="--lc:#a78bfa">
+      <span class="liga-tab-dot" style="background:#a78bfa"></span> Liga Nova
+    </button>
+  </div>
+  <div class="liga-head-info" id="liga-head-info"></div>
   <div class="table-wrap"><div class="table-scroll">
     <table>
       <thead><tr>
@@ -440,6 +473,15 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 <div class="section reveal" id="spieltage">
   <p class="section-eyebrow">Spielplan</p>
   <h2 class="section-title">Spieltage</h2>
+  <!-- Liga Tabs für Spieltage -->
+  <div class="liga-tabs" id="spieltage-tabs">
+    <button class="liga-tab active" onclick="switchLigaSpieltage('apex',this)" style="--lc:#f0a500">
+      <span class="liga-tab-dot" style="background:#f0a500"></span> Liga Apex
+    </button>
+    <button class="liga-tab" onclick="switchLigaSpieltage('nova',this)" style="--lc:#a78bfa">
+      <span class="liga-tab-dot" style="background:#a78bfa"></span> Liga Nova
+    </button>
+  </div>
   <div class="spieltage-list" id="spieltage-list">
     <div class="empty-state"><span class="big">📅</span>Noch kein Spielplan erstellt.<br>Im Admin-Bereich Spieler hinzufügen &amp; Spielplan generieren.</div>
   </div>
@@ -567,7 +609,12 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 //  KONFIGURATION  ← hier anpassen
 // ══════════════════════════════════════
 const ADMIN_PW    = 'ufl2025';  // Passwort ändern!
-const MAX_PLAYERS = 10;
+const MAX_PLAYERS = 6;   // Pro Liga
+const LIGEN = {
+  apex: { name: 'Liga Apex', color: '#f0a500', head: 'Seb' },
+  nova: { name: 'Liga Nova', color: '#a78bfa', head: 'AGE_Kevin' }
+};
+let activeLiga = 'apex';  // welche Liga gerade angezeigt / bearbeitet wird
 
 // ══════════════════════════════════════
 //  DATEN (localStorage)
@@ -585,17 +632,32 @@ const defaultPlayers = [
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
-let players  = load('ufl_players', defaultPlayers);
-let schedule = load('ufl_schedule', []);
-let nextId   = load('ufl_nextid', 8);
+// Separate data per liga
+let apexPlayers  = load('ufl_apex_players',  defaultPlayers.slice(0,3));
+let novaPlayers  = load('ufl_nova_players',  defaultPlayers.slice(3));
+let apexSchedule = load('ufl_apex_schedule', []);
+let novaSchedule = load('ufl_nova_schedule', []);
+let nextId       = load('ufl_nextid', 8);
+
+// Helpers — access current liga data
+function getPlayers(){ return activeLiga==='apex' ? apexPlayers : novaPlayers; }
+function getSchedule(){ return activeLiga==='apex' ? apexSchedule : novaSchedule; }
+function setPlayers(v){ if(activeLiga==='apex'){apexPlayers=v;save('ufl_apex_players',v);}else{novaPlayers=v;save('ufl_nova_players',v);} }
+function setSchedule(v){ if(activeLiga==='apex'){apexSchedule=v;save('ufl_apex_schedule',v);}else{novaSchedule=v;save('ufl_nova_schedule',v);} }
+// Keep these as aliases for existing code
+let players  = getPlayers();
+let schedule = getSchedule();
 
 // ══════════════════════════════════════
 //  TABELLE BERECHNEN
 // ══════════════════════════════════════
-function calcTable(){
+function calcTable(liga){
+  liga = liga || activeLiga;
+  const ps = liga==='apex' ? apexPlayers : novaPlayers;
+  const sc = liga==='apex' ? apexSchedule : novaSchedule;
   const s={};
-  players.forEach(p=>{s[p.id]={id:p.id,name:p.name,team:p.team,sp:0,s:0,u:0,n:0,gf:0,ga:0,form:[]}});
-  schedule.filter(m=>m.played).forEach(m=>{
+  ps.forEach(p=>{s[p.id]={id:p.id,name:p.name,team:p.team,sp:0,s:0,u:0,n:0,gf:0,ga:0,form:[]}});
+  sc.filter(m=>m.played).forEach(m=>{
     const h=s[m.home],a=s[m.away];
     if(!h||!a)return;
     const hg=+m.homeGoals||0,ag=+m.awayGoals||0;
@@ -613,8 +675,12 @@ function calcTable(){
   });
 }
 
-function renderTabelle(){
-  const rows=calcTable();
+function renderTabelle(liga){
+  liga = liga || activeLiga;
+  const rows=calcTable(liga);
+  // Update liga head info
+  const headEl = document.getElementById('liga-head-info');
+  if(headEl){ const l=LIGEN[liga]; headEl.textContent='Ligenkopf: '+l.head+' · '+l.name; }
   const tb=document.getElementById('tabelle-body');
   if(!rows.length){
     tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:2rem">Noch keine Spieler registriert.</td></tr>';
@@ -639,15 +705,18 @@ function renderTabelle(){
 // ══════════════════════════════════════
 //  SPIELTAGE RENDERN
 // ══════════════════════════════════════
-function renderSpieltage(){
+function renderSpieltage(liga){
+  liga = liga || activeLiga;
+  const sc = liga==='apex' ? apexSchedule : novaSchedule;
+  const ps = liga==='apex' ? apexPlayers  : novaPlayers;
   const list=document.getElementById('spieltage-list');
-  if(!schedule.length){
+  if(!sc.length){
     list.innerHTML='<div class="empty-state"><span class="big">📅</span>Noch kein Spielplan erstellt.<br>Im Admin-Bereich Spieler hinzufügen &amp; Spielplan generieren.</div>';
     return;
   }
-  const pMap={};players.forEach(p=>pMap[p.id]=p);
+  const pMap={};ps.forEach(p=>pMap[p.id]=p);
   const byMD={};
-  schedule.forEach(m=>{if(!byMD[m.matchday])byMD[m.matchday]=[];byMD[m.matchday].push(m)});
+  sc.forEach(m=>{if(!byMD[m.matchday])byMD[m.matchday]=[];byMD[m.matchday].push(m)});
   list.innerHTML=Object.keys(byMD).sort((a,b)=>+a-+b).map(md=>{
     const ms=byMD[md];
     const matchHTML=ms.map(m=>{
@@ -1167,6 +1236,145 @@ function getAvatar(player) {
 // ══════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════
+// Liga switch functions
+window.switchLigaTab = function(liga, btn) {
+  activeLiga = liga;
+  players  = getPlayers();
+  schedule = getSchedule();
+  document.querySelectorAll('#tabelle-tabs .liga-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderTabelle(liga);
+};
+
+window.switchLigaSpieltage = function(liga, btn) {
+  activeLiga = liga;
+  players  = getPlayers();
+  schedule = getSchedule();
+  document.querySelectorAll('#spieltage-tabs .liga-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderSpieltage(liga);
+};
+
+// Admin: add liga selector tab
+const _origRenderAdminBody = renderAdminBody;
+renderAdminBody = function() {
+  _origRenderAdminBody();
+  // inject liga selector after modal-tabs if admin is unlocked
+  const tabs = document.querySelector('.modal-tabs');
+  if(tabs && !document.getElementById('admin-liga-sel')) {
+    const sel = document.createElement('div');
+    sel.id = 'admin-liga-sel';
+    sel.style.cssText = 'display:flex;gap:.5rem;margin:.6rem 0;padding:.6rem;background:var(--dark);border-radius:8px;';
+    sel.innerHTML = '<span style="font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.1em;align-self:center;white-space:nowrap">LIGA:</span>'
+      + '<button onclick="adminSwitchLiga('apex',this)" class="liga-tab'+(activeLiga==='apex'?' active':'')+'" style="--lc:#f0a500;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#f0a500"></span> Apex</button>'
+      + '<button onclick="adminSwitchLiga('nova',this)" class="liga-tab'+(activeLiga==='nova'?' active':'')+'" style="--lc:#a78bfa;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#a78bfa"></span> Nova</button>';
+    tabs.parentNode.insertBefore(sel, tabs);
+  }
+};
+
+window.adminSwitchLiga = function(liga, btn) {
+  activeLiga = liga;
+  players  = getPlayers();
+  schedule = getSchedule();
+  document.querySelectorAll('#admin-liga-sel .liga-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderAdminBody();
+};
+
+// Fix: all save/load calls must use liga-specific storage
+const _origAddPlayer = addPlayer;
+addPlayer = function(){
+  players = getPlayers();
+  _origAddPlayer();
+  setPlayers(players);
+};
+
+const _origRemovePlayer = removePlayer;
+window.removePlayer = function(id){
+  if(!confirm('Spieler wirklich entfernen?'))return;
+  players = getPlayers().filter(p=>p.id!==id);
+  setPlayers(players);
+  renderAdminBody();renderPlayers();renderTabelle();
+  showToast('Spieler entfernt','success');
+};
+
+const _origUpdateAvatar = updateAvatar;
+window.updateAvatar = function(id, val){
+  players = getPlayers();
+  const p = players.find(x=>x.id===id);
+  if(!p) return;
+  p.avatar = val.trim();
+  setPlayers(players);
+  renderPlayers();
+  showToast('Avatar gespeichert ✓','success');
+};
+
+const _origGenerateSchedule = generateSchedule;
+generateSchedule = function(){
+  players = getPlayers();
+  schedule = [];
+  if(players.length<2){showToast('Mindestens 2 Spieler benötigt.','error');return;}
+  const ids=shuffle([...players.map(p=>p.id)]);
+  const list=ids.length%2===0?[...ids]:[...ids,null];
+  const rounds=list.length-1, half=list.length/2;
+  const matches=[];
+  let md=1;
+  const l1=[...list];
+  for(let r=0;r<rounds;r++){
+    for(let i=0;i<half;i++){
+      const h=l1[i],a=l1[l1.length-1-i];
+      if(h!==null&&a!==null) matches.push({matchday:md,home:h,away:a,homeGoals:'',awayGoals:'',played:false});
+    }
+    md++;
+    l1.splice(1,0,l1.pop());
+  }
+  const ids2=shuffle([...players.map(p=>p.id)]);
+  const l2=ids2.length%2===0?[...ids2]:[...ids2,null];
+  for(let r=0;r<rounds;r++){
+    for(let i=0;i<half;i++){
+      const h=l2[i],a=l2[l2.length-1-i];
+      if(h!==null&&a!==null) matches.push({matchday:md,home:a,away:h,homeGoals:'',awayGoals:'',played:false});
+    }
+    md++;
+    l2.splice(1,0,l2.pop());
+  }
+  schedule=matches;
+  setSchedule(schedule);
+  renderSpieltage();
+  renderTabelle();
+  showToast('Spielplan für '+LIGEN[activeLiga].name+' generiert! 🎲','success');
+};
+
+const _origSaveMatchday = saveMatchday;
+window.saveMatchday = function(md){
+  schedule = getSchedule();
+  let saved=0;
+  schedule.forEach((m,i)=>{
+    if(m.matchday!==+md)return;
+    const hv=document.getElementById('g'+i+'h')?.value;
+    const av=document.getElementById('g'+i+'a')?.value;
+    if(hv!==''&&hv!=null&&av!==''&&av!=null){
+      schedule[i].homeGoals=parseInt(hv)||0;
+      schedule[i].awayGoals=parseInt(av)||0;
+      schedule[i].played=true;
+      saved++;
+    }
+  });
+  if(saved===0){showToast('Keine Ergebnisse eingetragen.','error');return;}
+  setSchedule(schedule);
+  renderSpieltage();
+  renderTabelle();
+  showToast('Spieltag '+md+' ('+LIGEN[activeLiga].name+') gespeichert ✓','success');
+};
+
+window.confirmDeleteSchedule = function(){
+  if(!confirm('Spielplan für '+LIGEN[activeLiga].name+' wirklich löschen?'))return;
+  setSchedule([]);
+  schedule=[];
+  renderSpieltage();renderTabelle();renderAdminBody();
+  showToast('Spielplan gelöscht','success');
+};
+
 renderPlayers();
 renderTabelle();
 renderSpieltage();
