@@ -411,7 +411,7 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
     <li><a href="#regeln">Regeln</a></li>
     <li><a href="#teilnehmer">Teilnehmer</a></li>
     <li><a href="#streams">Streams</a></li>
-    <li><a href="#bewerbung" class="nav-cta">Bewerben</a></li>
+    <li><a href="#bewerbung" class="nav-cta" style="background:rgba(244,67,54,.18)!important;color:var(--red)!important;border:1px solid rgba(244,67,54,.35)">🔒 Geschlossen</a></li>
   <li><a href="https://scr1p-tv.github.io/Community-liga-draft/" class="nav-links-draft" target="_blank">⚡ Draft</a></li>
   <li><button class="nav-admin-btn" onclick="openAdmin()">⚙️ Admin</button></li>
   </ul>
@@ -423,7 +423,7 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
   <a href="#regeln"     onclick="closeMobile()">Regeln</a>
   <a href="#teilnehmer" onclick="closeMobile()">Teilnehmer</a>
   <a href="#streams"    onclick="closeMobile()">Streams</a>
-  <a href="#bewerbung"  onclick="closeMobile()" class="nav-cta">📋 Bewerben</a>
+  <a href="#bewerbung"  onclick="closeMobile()" style="color:var(--red)">🔒 Anmeldung geschlossen</a>
   <a href="https://scr1p-tv.github.io/Community-liga-draft/" onclick="closeMobile()" style="color:#00c8ff" target="_blank">⚡ Draft</a>
   <a href="#" onclick="closeMobile();openAdmin()" style="color:var(--accent)">⚙️ Admin</a>
 </div>
@@ -431,11 +431,11 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 <!-- HERO -->
 <section class="hero" id="home">
   <div class="hero-bg"></div><div class="hero-circle"></div>
-  <div class="badge"><span class="badge-dot"></span> Saison 2026 · Anmeldung offen</div>
+  <div class="badge" style="background:rgba(244,67,54,.09);border-color:rgba(244,67,54,.32);color:var(--red)"><span class="badge-dot" style="background:var(--red);animation:none"></span> Saison 2026 · Anmeldung geschlossen</div>
   <h1>UFL<em>Community</em>Liga</h1>
   <p class="hero-sub">Die inoffizielle UFL Liga für echte Fußball-Fans. Zeige dein Können, steig in die Rangliste auf und kämpfe um den Titel.</p>
   <div class="hero-btns">
-    <a href="#bewerbung" class="btn-primary">⚡ Jetzt bewerben</a>
+    <span class="btn-primary" style="background:rgba(244,67,54,.18);color:var(--red);cursor:default;pointer-events:none;border:1px solid rgba(244,67,54,.35)">🔒 Anmeldung geschlossen</span>
     <a href="#tabelle"   class="btn-outline">Aktuelle Tabelle →</a>
   </div>
 </section>
@@ -493,6 +493,13 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 <div class="section reveal" id="regeln">
   <p class="section-eyebrow">Regelwerk</p>
   <h2 class="section-title">Liga-Regeln</h2>
+  <div style="margin-bottom:1.2rem">
+    <a href="https://docs.google.com/document/d/1EueM2HI2tsg7ifKypnr20Z9ETs7vbAD-RVKYyeoAjLw/edit?usp=sharing" target="_blank" rel="noopener"
+      style="display:inline-flex;align-items:center;gap:.55rem;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.3);border-radius:8px;padding:.6rem 1.15rem;font-size:.82rem;font-weight:700;color:var(--green);letter-spacing:.06em;text-transform:uppercase;transition:background .2s,border-color .2s;text-decoration:none"
+      onmouseover="this.style.background='rgba(0,230,118,.16)'" onmouseout="this.style.background='rgba(0,230,118,.08)'">
+      📜 Offizielles Regelwerk ↗
+    </a>
+  </div>
   <div class="rules-grid">
     <div class="rule-card"><div class="rule-num">01</div><div class="rule-name">Spielmodus</div><p class="rule-text">Alle Spiele werden im 1v1-Modus ausgetragen. Jede Begegnung besteht aus Hin- und Rückspiel.</p></div>
     <div class="rule-card"><div class="rule-num">02</div><div class="rule-name">Spielzeit &amp; Fristen</div><p class="rule-text">Pro Spieltag haben Spieler 7 Tage Zeit. Nicht gespielte Matches werden als 0:3 gewertet.</p></div>
@@ -573,12 +580,12 @@ footer{max-width:1100px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1re
 
 <!-- BEWERBUNG -->
 <div class="cta-wrap reveal" id="bewerbung">
-  <div class="cta-card">
+  <div class="cta-card" style="border-color:rgba(244,67,54,.28);background:linear-gradient(135deg,rgba(244,67,54,.07),rgba(8,11,14,.0))">
     <div>
-      <h2>Bereit für die <span>Liga?</span></h2>
-      <p>Bewirb dich jetzt für die nächste Saison. Füll das Formular aus und wir melden uns bei dir.</p>
+      <h2 style="color:var(--text)">Bewerbungszeitraum <span style="color:var(--red)">geschlossen</span></h2>
+      <p>Der Anmeldezeitraum für die aktuelle Saison ist abgelaufen. Halte Ausschau nach der nächsten Saison!</p>
     </div>
-    <a href="https://forms.gle/iZfCBKiRYBSfw3Gf8" target="_blank" rel="noopener" class="btn-primary" style="font-size:.92rem;padding:.88rem 1.9rem">📋 Zur Bewerbung</a>
+    <span class="btn-primary" style="font-size:.92rem;padding:.88rem 1.9rem;background:rgba(244,67,54,.18);color:var(--red);cursor:default;pointer-events:none;border:1px solid rgba(244,67,54,.35)">🔒 Anmeldung geschlossen</span>
   </div>
 </div>
 
@@ -617,27 +624,98 @@ const LIGEN = {
 let activeLiga = 'apex';  // welche Liga gerade angezeigt / bearbeitet wird
 
 // ══════════════════════════════════════
-//  DATEN (localStorage)
+//  DATEN (hardcodiert + localStorage-Overlay)
 // ══════════════════════════════════════
-const defaultPlayers = [
-  {id:1,name:'BennyBroKenobi',team:'',avatar:'avatars/bennybrokenobi.png'},
-  {id:2,name:'DatSeb',        team:'',avatar:'avatars/datseb.png'},
-  {id:3,name:'AGE_Kevin',     team:'',avatar:'avatars/age_kevin.png'},
-  {id:4,name:'Kira',          team:'',avatar:'avatars/kira.png'},
-  {id:5,name:'Askeladd',      team:'',avatar:'avatars/askeladd.png'},
-  {id:6,name:'Virent',        team:'',avatar:'avatars/virent.png'},
-  {id:7,name:'Scr1p',         team:'',avatar:'avatars/scr1p.png'},
+const defaultApexPlayers = [
+  {id:2, name:'DatSeb',           team:'', avatar:'avatars/datseb.png'},
+  {id:19,name:'BennyBroKenobi',   team:'—',avatar:'avatars/benny.png'},
+  {id:20,name:'Kira',             team:'—',avatar:'avatars/kira'},
+  {id:21,name:'Virent90',         team:'—',avatar:'avatars/virent90'},
+  {id:22,name:'Gunzifer_',        team:'—',avatar:''},
+  {id:23,name:'Slashabilly',      team:'—',avatar:''},
+];
+const defaultNovaPlayers = [
+  {id:18,name:'AGE_Kevin',        team:'—',avatar:'avatars/age_kevin'},
+  {id:24,name:'Unomys',           team:'—',avatar:''},
+  {id:25,name:'Askeladd',         team:'—',avatar:'avatars/askeladd'},
+  {id:26,name:'Scr1p',            team:'—',avatar:'avatars/scr1p'},
+  {id:27,name:'x21Tobinho',       team:'—',avatar:''},
+  {id:28,name:'BongoKingCarl_PS', team:'—',avatar:''},
+];
+const defaultApexSchedule = [
+  {matchday:1, home:20,away:19,homeGoals:'',awayGoals:'',played:false},
+  {matchday:1, home:23,away:2, homeGoals:'',awayGoals:'',played:false},
+  {matchday:1, home:22,away:21,homeGoals:'',awayGoals:'',played:false},
+  {matchday:2, home:20,away:2, homeGoals:'',awayGoals:'',played:false},
+  {matchday:2, home:19,away:21,homeGoals:'',awayGoals:'',played:false},
+  {matchday:2, home:23,away:22,homeGoals:'',awayGoals:'',played:false},
+  {matchday:3, home:20,away:21,homeGoals:'',awayGoals:'',played:false},
+  {matchday:3, home:2, away:22,homeGoals:'',awayGoals:'',played:false},
+  {matchday:3, home:19,away:23,homeGoals:'',awayGoals:'',played:false},
+  {matchday:4, home:20,away:22,homeGoals:'',awayGoals:'',played:false},
+  {matchday:4, home:21,away:23,homeGoals:'',awayGoals:'',played:false},
+  {matchday:4, home:2, away:19,homeGoals:'',awayGoals:'',played:false},
+  {matchday:5, home:20,away:23,homeGoals:'',awayGoals:'',played:false},
+  {matchday:5, home:22,away:19,homeGoals:'',awayGoals:'',played:false},
+  {matchday:5, home:21,away:2, homeGoals:'',awayGoals:'',played:false},
+  {matchday:6, home:2, away:22,homeGoals:'',awayGoals:'',played:false},
+  {matchday:6, home:20,away:21,homeGoals:'',awayGoals:'',played:false},
+  {matchday:6, home:19,away:23,homeGoals:'',awayGoals:'',played:false},
+  {matchday:7, home:20,away:22,homeGoals:'',awayGoals:'',played:false},
+  {matchday:7, home:19,away:2, homeGoals:'',awayGoals:'',played:false},
+  {matchday:7, home:23,away:21,homeGoals:'',awayGoals:'',played:false},
+  {matchday:8, home:19,away:22,homeGoals:'',awayGoals:'',played:false},
+  {matchday:8, home:23,away:20,homeGoals:'',awayGoals:'',played:false},
+  {matchday:8, home:21,away:2, homeGoals:'',awayGoals:'',played:false},
+  {matchday:9, home:23,away:22,homeGoals:'',awayGoals:'',played:false},
+  {matchday:9, home:21,away:19,homeGoals:'',awayGoals:'',played:false},
+  {matchday:9, home:2, away:20,homeGoals:'',awayGoals:'',played:false},
+  {matchday:10,home:21,away:22,homeGoals:'',awayGoals:'',played:false},
+  {matchday:10,home:2, away:23,homeGoals:'',awayGoals:'',played:false},
+  {matchday:10,home:20,away:19,homeGoals:'',awayGoals:'',played:false},
+];
+const defaultNovaSchedule = [
+  {matchday:1, home:28,away:26,homeGoals:'',awayGoals:'',played:false},
+  {matchday:1, home:27,away:18,homeGoals:'',awayGoals:'',played:false},
+  {matchday:1, home:25,away:24,homeGoals:'',awayGoals:'',played:false},
+  {matchday:2, home:28,away:18,homeGoals:'',awayGoals:'',played:false},
+  {matchday:2, home:26,away:24,homeGoals:'',awayGoals:'',played:false},
+  {matchday:2, home:27,away:25,homeGoals:'',awayGoals:'',played:false},
+  {matchday:3, home:28,away:24,homeGoals:'',awayGoals:'',played:false},
+  {matchday:3, home:18,away:25,homeGoals:'',awayGoals:'',played:false},
+  {matchday:3, home:26,away:27,homeGoals:'',awayGoals:'',played:false},
+  {matchday:4, home:28,away:25,homeGoals:'',awayGoals:'',played:false},
+  {matchday:4, home:24,away:27,homeGoals:'',awayGoals:'',played:false},
+  {matchday:4, home:18,away:26,homeGoals:'',awayGoals:'',played:false},
+  {matchday:5, home:28,away:27,homeGoals:'',awayGoals:'',played:false},
+  {matchday:5, home:25,away:26,homeGoals:'',awayGoals:'',played:false},
+  {matchday:5, home:24,away:18,homeGoals:'',awayGoals:'',played:false},
+  {matchday:6, home:26,away:18,homeGoals:'',awayGoals:'',played:false},
+  {matchday:6, home:27,away:28,homeGoals:'',awayGoals:'',played:false},
+  {matchday:6, home:25,away:24,homeGoals:'',awayGoals:'',played:false},
+  {matchday:7, home:27,away:18,homeGoals:'',awayGoals:'',played:false},
+  {matchday:7, home:25,away:26,homeGoals:'',awayGoals:'',played:false},
+  {matchday:7, home:24,away:28,homeGoals:'',awayGoals:'',played:false},
+  {matchday:8, home:25,away:18,homeGoals:'',awayGoals:'',played:false},
+  {matchday:8, home:24,away:27,homeGoals:'',awayGoals:'',played:false},
+  {matchday:8, home:28,away:26,homeGoals:'',awayGoals:'',played:false},
+  {matchday:9, home:24,away:18,homeGoals:'',awayGoals:'',played:false},
+  {matchday:9, home:28,away:25,homeGoals:'',awayGoals:'',played:false},
+  {matchday:9, home:26,away:27,homeGoals:'',awayGoals:'',played:false},
+  {matchday:10,home:28,away:18,homeGoals:'',awayGoals:'',played:false},
+  {matchday:10,home:26,away:24,homeGoals:'',awayGoals:'',played:false},
+  {matchday:10,home:27,away:25,homeGoals:'',awayGoals:'',played:false},
 ];
 
 function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
-// Separate data per liga
-let apexPlayers  = load('ufl_apex_players',  defaultPlayers.slice(0,3));
-let novaPlayers  = load('ufl_nova_players',  defaultPlayers.slice(3));
-let apexSchedule = load('ufl_apex_schedule', []);
-let novaSchedule = load('ufl_nova_schedule', []);
-let nextId       = load('ufl_nextid', 8);
+// Hardcoded defaults — localStorage only overrides if admin has made changes
+let apexPlayers  = load('ufl_apex_players',  defaultApexPlayers);
+let novaPlayers  = load('ufl_nova_players',  defaultNovaPlayers);
+let apexSchedule = load('ufl_apex_schedule', defaultApexSchedule);
+let novaSchedule = load('ufl_nova_schedule', defaultNovaSchedule);
+let nextId       = load('ufl_nextid', 29);
 
 // Helpers — access current liga data
 function getPlayers(){ return activeLiga==='apex' ? apexPlayers : novaPlayers; }
@@ -1265,11 +1343,9 @@ renderAdminBody = function() {
     const sel = document.createElement('div');
     sel.id = 'admin-liga-sel';
     sel.style.cssText = 'display:flex;gap:.5rem;margin:.6rem 0;padding:.6rem;background:var(--dark);border-radius:8px;';
-    var apexActive = activeLiga==='apex' ? ' active' : '';
-    var novaActive = activeLiga==='nova' ? ' active' : '';
     sel.innerHTML = '<span style="font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.1em;align-self:center;white-space:nowrap">LIGA:</span>'
-      + '<button onclick="adminSwitchLiga(\'apex\',this)" class="liga-tab' + apexActive + '" style="--lc:#f0a500;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#f0a500"></span> Apex</button>'
-      + '<button onclick="adminSwitchLiga(\'nova\',this)" class="liga-tab' + novaActive + '" style="--lc:#a78bfa;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#a78bfa"></span> Nova</button>';
+      + '<button onclick="adminSwitchLiga('apex',this)" class="liga-tab'+(activeLiga==='apex'?' active':'')+'" style="--lc:#f0a500;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#f0a500"></span> Apex</button>'
+      + '<button onclick="adminSwitchLiga('nova',this)" class="liga-tab'+(activeLiga==='nova'?' active':'')+'" style="--lc:#a78bfa;font-size:.72rem;padding:.3rem .8rem"><span class="liga-tab-dot" style="background:#a78bfa"></span> Nova</button>';
     tabs.parentNode.insertBefore(sel, tabs);
   }
 };
